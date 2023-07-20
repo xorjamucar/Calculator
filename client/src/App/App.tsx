@@ -17,7 +17,7 @@ enum Operand {
 }
 function addCommas(x: number) {
   return x.toLocaleString(undefined, {
-    maximumFractionDigits: 17,
+    maximumFractionDigits: 16,
   });
 }
 function removeCommas(x: string) {
@@ -74,7 +74,7 @@ export default function App() {
     var f = functionMap.get(operand) || nullOperand;
     let current = userInput;
     let previous = previousValue;
-    const haveResult = operation.slice(-1) === "=";
+    const haveResult = operation.slice(-1) === "=" && operand;
     haveResult && ([current, previous] = [previous, current]);
     var newInput = f(
       Number(removeCommas(current)),
@@ -87,6 +87,7 @@ export default function App() {
       (operationString = previous + operand);
     setOperation(operationString);
     !haveResult && setPreviousValue(userInput);
+    if (newInput === userInput) setPreviousFlag(true);
     setUserInput(newInput);
   };
 
@@ -99,10 +100,11 @@ export default function App() {
   };
   // handle new input is decimal
   const handleNewInputIsDecimal = () => {
-    if (previousValue) {
+    if (Number(previousValue)) {
       handleClear("0.");
       return;
     }
+
     !userInput.includes(".") && setUserInput(userInput + ".");
   };
 
@@ -117,13 +119,15 @@ export default function App() {
       return;
     }
     // handle decimals
-    if (
+    else if (
       (userInput.slice(-1) === "0" && userInput.includes(".")) ||
       userInput.slice(-1) === "."
     ) {
       setUserInput(userInput + n);
       return;
     }
+
+    // handleEqual
 
     let stringNumber = removeCommas(userInput).toString();
     let newInput = addCommas(Number(stringNumber + n));
@@ -337,6 +341,9 @@ export default function App() {
             variant="contained"
             sx={{ fontSize: 20 }}
             onClick={handleResult}
+            onKeyUp={(event: React.KeyboardEvent<HTMLButtonElement>) => {
+              console.log(event.key);
+            }}
           >
             =
           </Button>

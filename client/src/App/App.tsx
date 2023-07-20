@@ -75,6 +75,7 @@ export default function App() {
     let current = userInput;
     let previous = previousValue;
     const haveResult = operation.slice(-1) === "=" && operand;
+
     haveResult && ([current, previous] = [previous, current]);
     var newInput = f(
       Number(removeCommas(current)),
@@ -87,7 +88,7 @@ export default function App() {
       (operationString = previous + operand);
     setOperation(operationString);
     !haveResult && setPreviousValue(userInput);
-    if (newInput === userInput) setPreviousFlag(true);
+    if (current === userInput) setPreviousFlag(true);
     setUserInput(newInput);
   };
 
@@ -132,9 +133,11 @@ export default function App() {
     let stringNumber = removeCommas(userInput).toString();
     let newInput = addCommas(Number(stringNumber + n));
 
-    if (previousFlag && stringNumber === n) {
-      newInput = previousValue;
-    } else if (previousFlag) {
+    // if (previousFlag && stringNumber === n) {
+    //   console.log("here");
+    //   newInput = previousValue;
+    // } else
+    if (previousFlag) {
       newInput = n;
     }
 

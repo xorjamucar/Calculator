@@ -4,12 +4,12 @@ import Button from "@mui/material/Button";
 interface OperationButtonProps {
   operand: Operand;
   handleOperandChange: (o: Operand) => void;
-  userInput: string;
+  disabled: boolean;
 }
 export default function OperandButton({
   operand,
   handleOperandChange,
-  userInput,
+  disabled,
 }: OperationButtonProps) {
   const handleClick = () => {
     handleOperandChange(operand);
@@ -19,10 +19,7 @@ export default function OperandButton({
       variant="outlined"
       sx={{ fontSize: 20 }}
       onClick={handleClick}
-      disabled={
-        userInput === "Cannot devide by zero" ||
-        userInput === "Result is Undefined"
-      }
+      disabled={disabled}
     >
       {operand}
     </Button>

@@ -46,7 +46,6 @@ function handleOperation(
   const result: number = evaluate(`${previousNumber}  ${mathOperand} ${input}`);
   var parsedResult = addCommas(result);
   const op = `${previousNumber} ${o} ${input} =`;
-
   return {
     result: parsedResult,
     op: op,
@@ -114,10 +113,11 @@ export default function App() {
 
   // input change handler
   const handleInputChange = (n: string) => {
+    console.log(operandPressed);
     if (
       userInput === "Cannot devide by zero" ||
       userInput === "Result is Undefined" ||
-      operation.slice(-1) === "="
+      (operation.slice(-1) === "=" && operand)
     ) {
       handleClear(n);
       return;

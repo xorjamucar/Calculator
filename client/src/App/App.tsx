@@ -7,60 +7,12 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { evaluate } from "mathjs";
-
-enum Operand {
-  Sum = "+",
-  Sub = "-",
-  Div = "÷",
-  Mult = "×",
-  Null = "",
-}
-
-var operandMap = new Map([
-  [Operand.Sum, "+"],
-  [Operand.Sub, "-"],
-  [Operand.Div, "/"],
-  [Operand.Mult, "*"],
-]);
-
-interface OperationHandlerReturn {
-  result: string;
-  op: string;
-}
-function handleOperation(
-  input: number,
-  previousNumber: number,
-  o: Operand
-): OperationHandlerReturn {
-  var mathOperand = operandMap.get(o);
-
-  if (previousNumber === 0 && input === 0 && o === Operand.Div) {
-    return {
-      result: "Result is Undefined",
-      op: `${previousNumber} ${o}`,
-    };
-  } else if (input === 0 && o === Operand.Div)
-    return { result: "Cannot devide by zero", op: `${previousNumber} ${o}` };
-  else if (!mathOperand) return { result: "" + input, op: input + "=" };
-  const result: number = evaluate(`${previousNumber}  ${mathOperand} ${input}`);
-  var parsedResult = addCommas(result);
-  const op = `${previousNumber} ${o} ${input} =`;
-  return {
-    result: parsedResult,
-    op: op,
-  };
-}
-
-function addCommas(x: number) {
-  return x.toLocaleString("en-US", {
-    maximumFractionDigits: 15,
-  });
-}
-function removeCommas(x: string) {
-  let r = Number(x.replace(/,/g, ""));
-  return r;
-}
+import EqualButton from "./Components/EqualButton";
+import { Operand, removeCommas, handleOperation, addCommas } from "./functions";
+import NumberButton from "./Components/NumberButton";
+import OperandButton from "./Components/OperandButton";
+import DecimalButton from "./Components/DecimalButton";
+import ClearButton from "./Components/ClearButton";
 
 export default function App() {
   const [userInput, setUserInput] = React.useState("0");
@@ -69,15 +21,9 @@ export default function App() {
   const [previousValue, setPreviousValue] = React.useState("0");
   const [firstCall, setFirstCall] = React.useState(false);
   const [operandPressed, setOperandPressed] = React.useState(false);
+
   // result handler
   const handleResult = () => {
-    if (
-      userInput === "Cannot devide by zero" ||
-      userInput === "Result is Undefined"
-    ) {
-      handleClear("0");
-      return;
-    }
     let [prev, current] = [
       removeCommas(previousValue),
       removeCommas(userInput),
@@ -102,6 +48,7 @@ export default function App() {
     setOperandPressed(false);
     setPreviousValue("");
   };
+
   // handle new input is decimal
   const handleNewInputIsDecimal = () => {
     if (firstCall) {
@@ -111,22 +58,20 @@ export default function App() {
     !userInput.includes(".") && setUserInput(userInput + ".");
   };
 
-  // input change handler
-  const handleInputChange = (n: string) => {
-    console.log(operandPressed);
-    if (
-      userInput === "Cannot devide by zero" ||
-      userInput === "Result is Undefined" ||
-      (operation.slice(-1) === "=" && operand)
-    ) {
-      handleClear(n);
-      return;
-    } else if (firstCall) {
-      setFirstCall(false);
-      setOperandPressed(false);
-      setUserInput(n);
-      return;
-    }
+  // firstCallHandler
+  const handleFirstCall = (n: string) => {
+    setFirstCall(false);
+    setOperandPressed(false);
+    setUserInput(n);
+  };
+
+  // has toReset
+  const hasToReset = () =>
+    ["Cannot devide by zero", "Result is Undefined"].includes(userInput) ||
+    (operation.slice(-1) === "=" && operand !== Operand.Null);
+
+  // changeInput
+  const changeInput = (n: string) => {
     const splitNumber = userInput.split(".");
     if (splitNumber.length === 2) {
       setUserInput(splitNumber[0] + "." + splitNumber[1] + n);
@@ -134,6 +79,13 @@ export default function App() {
       setUserInput(addCommas(Number(removeCommas(userInput) + n)));
     }
     setOperandPressed(false);
+  };
+  const handleInputChange = (n: string) => {
+    hasToReset()
+      ? handleClear(n)
+      : firstCall
+      ? handleFirstCall(n)
+      : changeInput(n);
   };
 
   // operand change Handler
@@ -154,52 +106,6 @@ export default function App() {
     setFirstCall(true);
     setOperandPressed(true);
     setOperation(newOperation);
-  };
-
-  // operand button click handlers
-  const handleMult = () => {
-    handleOperandChange(Operand.Mult);
-  };
-  const handleDiv = () => {
-    handleOperandChange(Operand.Div);
-  };
-  const handleSub = () => {
-    handleOperandChange(Operand.Sub);
-  };
-  const handleSum = () => {
-    handleOperandChange(Operand.Sum);
-  };
-
-  // number button click handlers
-  const handleZeroClick = () => {
-    handleInputChange("0");
-  };
-  const handleOneClick = () => {
-    handleInputChange("1");
-  };
-  const handleTwoClick = () => {
-    handleInputChange("2");
-  };
-  const handleThreeClick = () => {
-    handleInputChange("3");
-  };
-  const handleFourClick = () => {
-    handleInputChange("4");
-  };
-  const handleFiveClick = () => {
-    handleInputChange("5");
-  };
-  const handleSixClick = () => {
-    handleInputChange("6");
-  };
-  const handleSevenClick = () => {
-    handleInputChange("7");
-  };
-  const handleEightClick = () => {
-    handleInputChange("8");
-  };
-  const handleNineClick = () => {
-    handleInputChange("9");
   };
 
   return (
@@ -229,118 +135,55 @@ export default function App() {
           inputProps={{ style: { textAlign: "end" } }}
         />
         <Stack direction="row" spacing={1}>
-          <Button variant="outlined" onClick={handleSevenClick}>
-            7
-          </Button>
-          <Button variant="outlined" onClick={handleEightClick}>
-            8
-          </Button>
-          <Button variant="outlined" onClick={handleNineClick}>
-            9
-          </Button>
-          <Button
-            variant="outlined"
-            sx={{ fontSize: 20 }}
-            onClick={() => handleClear("0")}
-          >
-            C
-          </Button>
+          <NumberButton num="7" handleInputChange={handleInputChange} />
+          <NumberButton num="8" handleInputChange={handleInputChange} />
+          <NumberButton num="9" handleInputChange={handleInputChange} />
+          <ClearButton handleClear={handleClear} />
         </Stack>
         <Stack direction="row" spacing={1}>
-          <Button variant="outlined" onClick={handleFourClick}>
-            4
-          </Button>
-          <Button variant="outlined" onClick={handleFiveClick}>
-            5
-          </Button>
-          <Button variant="outlined" onClick={handleSixClick}>
-            6
-          </Button>
-          <Button
-            variant="outlined"
-            sx={{ fontSize: 20 }}
-            onClick={handleMult}
-            disabled={
-              userInput === "Cannot devide by zero" ||
-              userInput === "Result is Undefined"
-            }
-          >
-            ×
-          </Button>
+          <NumberButton num="4" handleInputChange={handleInputChange} />
+          <NumberButton num="5" handleInputChange={handleInputChange} />
+          <NumberButton num="6" handleInputChange={handleInputChange} />
+          <OperandButton
+            operand={Operand.Mult}
+            handleOperandChange={handleOperandChange}
+            userInput={userInput}
+          />
         </Stack>
         <Stack direction="row" spacing={1}>
-          <Button variant="outlined" onClick={handleOneClick}>
-            1
-          </Button>
-          <Button variant="outlined" onClick={handleTwoClick}>
-            2
-          </Button>
-          <Button variant="outlined" onClick={handleThreeClick}>
-            3
-          </Button>
-          <Button
-            variant="outlined"
-            sx={{ fontSize: 20 }}
-            onClick={handleDiv}
-            disabled={
-              userInput === "Cannot devide by zero" ||
-              userInput === "Result is Undefined"
-            }
-          >
-            ÷
-          </Button>
+          <NumberButton num="1" handleInputChange={handleInputChange} />
+          <NumberButton num="2" handleInputChange={handleInputChange} />
+          <NumberButton num="3" handleInputChange={handleInputChange} />
+          <OperandButton
+            operand={Operand.Div}
+            handleOperandChange={handleOperandChange}
+            userInput={userInput}
+          />
         </Stack>
         <Stack direction="row" spacing={1}>
-          <Button
-            variant="outlined"
-            sx={{ fontSize: 20 }}
-            onClick={handleSub}
-            disabled={
-              userInput === "Cannot devide by zero" ||
-              userInput === "Result is Undefined"
-            }
-          >
-            -
-          </Button>
+          <OperandButton
+            operand={Operand.Sub}
+            handleOperandChange={handleOperandChange}
+            userInput={userInput}
+          />
 
-          <Button variant="outlined" onClick={handleZeroClick}>
-            0
-          </Button>
-          <Button
-            variant="outlined"
-            sx={{ fontSize: 20 }}
-            onClick={handleSum}
-            disabled={
-              userInput === "Cannot devide by zero" ||
-              userInput === "Result is Undefined"
-            }
-          >
-            +
-          </Button>
-          <Button
-            variant="outlined"
-            sx={{ fontSize: 20 }}
-            onClick={handleNewInputIsDecimal}
-            disabled={
-              userInput === "Cannot devide by zero" ||
-              userInput === "Result is Undefined"
-            }
-          >
-            .
-          </Button>
+          <NumberButton num="0" handleInputChange={handleInputChange} />
+          <OperandButton
+            operand={Operand.Sum}
+            handleOperandChange={handleOperandChange}
+            userInput={userInput}
+          />
+          <DecimalButton
+            userInput={userInput}
+            handleNewInputIsDecimal={handleNewInputIsDecimal}
+          />
         </Stack>
         <Stack direction="row">
-          <Button
-            fullWidth
-            variant="contained"
-            sx={{ fontSize: 20 }}
-            onClick={handleResult}
-            onKeyUp={(event: React.KeyboardEvent<HTMLButtonElement>) => {
-              console.log(event.key);
-            }}
-          >
-            =
-          </Button>
+          <EqualButton
+            handleResult={handleResult}
+            handleClear={handleClear}
+            userInput={userInput}
+          />
         </Stack>
       </Stack>
     </Box>

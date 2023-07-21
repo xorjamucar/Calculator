@@ -28,7 +28,26 @@ export default function NumberButton({
     handleInputChange(num);
   };
   return (
-    <Button variant="outlined" onClick={handleClick}>
+    <Button
+      variant="outlined"
+      onClick={handleClick}
+      disableRipple
+      sx={{
+        backgroundColor: "white",
+        boxShadow: 1,
+        color: "black",
+        borderColor: "#bdbdbd",
+        "&:hover": {
+          backgroundColor: "#eeeeee",
+          borderColor: "#bdbdbd",
+        },
+        "&:active": {
+          backgroundColor: "#eeeeee",
+          borderColor: "#bdbdbd",
+          boxShadow: 0,
+        },
+      }}
+    >
       {num}
     </Button>
   );

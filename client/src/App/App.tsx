@@ -25,9 +25,8 @@ export default function App() {
     () =>
       ["Cannot devide by zero", "Result is Undefined"].includes(userInput) ||
       (operation.slice(-1) === "=" && operand !== Operand.Null),
-    [userInput, operation]
+    [userInput, operation, operand]
   );
-
   // disable operations
   const disableOperations = React.useMemo(
     () =>
@@ -56,7 +55,6 @@ export default function App() {
   const changeInput = React.useCallback(
     (n: string) => {
       const splitNumber = userInput.split(".");
-      console.log(n);
       if (splitNumber.length === 2) {
         setUserInput(splitNumber[0] + "." + splitNumber[1] + n);
       } else {
@@ -135,6 +133,7 @@ export default function App() {
         minHeight: "100vh",
         alignItems: "center",
         justifyContent: "center",
+        backgroundColor: "#eeeeee",
         // width: 280,
       }}
     >

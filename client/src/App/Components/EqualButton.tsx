@@ -20,7 +20,21 @@ export default function EqualButton({
     <Button
       fullWidth
       variant="contained"
-      sx={{ fontSize: 20 }}
+      disableRipple
+      sx={{
+        fontSize: 20,
+        boxShadow: 1,
+        borderColor: "#bdbdbd",
+        "&:hover": {
+          backgroundColor: "#1e88e5",
+          borderColor: "#bdbdbd",
+        },
+        "&:active": {
+          backgroundColor: "#42a5f5",
+          borderColor: "#bdbdbd",
+          boxShadow: 0,
+        },
+      }}
       onClick={handleButtonClick}
     >
       =

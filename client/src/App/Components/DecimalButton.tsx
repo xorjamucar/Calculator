@@ -12,7 +12,24 @@ export default function DecimalButton({
   return (
     <Button
       variant="outlined"
-      sx={{ fontSize: 20 }}
+      disableRipple
+      sx={{
+        fontSize: 20,
+        fontWeight: "1",
+        backgroundColor: "#f5f5f5",
+        boxShadow: 1,
+        color: "black",
+        borderColor: "#bdbdbd",
+        "&:hover": {
+          backgroundColor: "#eeeeee",
+          borderColor: "#bdbdbd",
+        },
+        "&:active": {
+          backgroundColor: "#eeeeee",
+          borderColor: "#bdbdbd",
+          boxShadow: 0,
+        },
+      }}
       onClick={handleNewInputIsDecimal}
       disabled={
         userInput === "Cannot devide by zero" ||

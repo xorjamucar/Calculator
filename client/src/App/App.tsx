@@ -7,7 +7,8 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
+import { evaluate } from "mathjs";
+
 enum Operand {
   Sum = "+",
   Sub = "-",
@@ -15,54 +16,62 @@ enum Operand {
   Mult = "×",
   Null = "",
 }
+
+var operandMap = new Map([
+  [Operand.Sum, "+"],
+  [Operand.Sub, "-"],
+  [Operand.Div, "/"],
+  [Operand.Mult, "*"],
+]);
+
+interface OperationHandlerReturn {
+  result: string;
+  op: string;
+}
+function handleOperation(
+  input: number,
+  previousNumber: number,
+  o: Operand
+): OperationHandlerReturn {
+  var mathOperand = operandMap.get(o);
+
+  if (previousNumber === 0 && input === 0 && o === Operand.Div) {
+    return {
+      result: "Result is Undefined",
+      op: `${previousNumber} ${o}`,
+    };
+  } else if (input === 0 && o === Operand.Div)
+    return { result: "Cannot devide by zero", op: `${previousNumber} ${o}` };
+  else if (!mathOperand) return { result: "" + input, op: input + "=" };
+  const result: number = evaluate(`${previousNumber}  ${mathOperand} ${input}`);
+  var parsedResult = addCommas(result);
+  const op = `${previousNumber} ${o} ${input} =`;
+
+  return {
+    result: parsedResult,
+    op: op,
+  };
+}
+
 function addCommas(x: number) {
-  return x.toLocaleString(undefined, {
-    maximumFractionDigits: 16,
+  return x.toLocaleString("en-US", {
+    maximumFractionDigits: 15,
   });
 }
 function removeCommas(x: string) {
-  let r = parseFloat(x.replace(/,/g, ""));
-
+  let r = Number(x.replace(/,/g, ""));
   return r;
 }
-
-function multipy(input: number, previousNumber: number) {
-  return addCommas(previousNumber * input);
-}
-function divide(input: number, previousNumber: number) {
-  let result = "Cannot devide by zero";
-  if (input !== 0) result = addCommas(previousNumber / input);
-  else if (input === 0 && previousNumber === 0) result = "Result is Undefined";
-  return result;
-}
-function sum(input: number, previousNumber: number) {
-  return addCommas(previousNumber + input);
-}
-function sub(input: number, previousNumber: number) {
-  return addCommas(previousNumber - input);
-}
-function nullOperand(input: number, previousNumber: number) {
-  return addCommas(input);
-}
-
-const functionMap = new Map([
-  [Operand.Mult, multipy],
-  [Operand.Div, divide],
-  [Operand.Sub, sub],
-  [Operand.Sum, sum],
-  [Operand.Null, nullOperand],
-]);
 
 export default function App() {
   const [userInput, setUserInput] = React.useState("0");
   const [operand, setOperand] = React.useState<Operand>(Operand.Null);
   const [operation, setOperation] = React.useState("");
   const [previousValue, setPreviousValue] = React.useState("0");
-  const [previousFlag, setPreviousFlag] = React.useState(false);
-
+  const [firstCall, setFirstCall] = React.useState(false);
+  const [operandPressed, setOperandPressed] = React.useState(false);
   // result handler
   const handleResult = () => {
-    setOperation(operation + userInput);
     if (
       userInput === "Cannot devide by zero" ||
       userInput === "Result is Undefined"
@@ -70,26 +79,19 @@ export default function App() {
       handleClear("0");
       return;
     }
-
-    var f = functionMap.get(operand) || nullOperand;
-    let current = userInput;
-    let previous = previousValue;
-    const haveResult = operation.slice(-1) === "=" && operand;
-
-    haveResult && ([current, previous] = [previous, current]);
-    var newInput = f(
-      Number(removeCommas(current)),
-      Number(removeCommas(previous))
-    );
-    let operationString = previous + operand + current + "=";
-    !operand && (operationString = current + "=");
-    (newInput === "Cannot devide by zero" ||
-      newInput === "Result is Undefined") &&
-      (operationString = previous + operand);
-    setOperation(operationString);
-    !haveResult && setPreviousValue(userInput);
-    if (current === userInput) setPreviousFlag(true);
-    setUserInput(newInput);
+    let [prev, current] = [
+      removeCommas(previousValue),
+      removeCommas(userInput),
+    ];
+    operation.slice(-1) === "=" &&
+      operand &&
+      ([prev, current] = [current, prev]);
+    const r = handleOperation(current, prev, operand);
+    setPreviousValue(addCommas(current));
+    setUserInput(r.result);
+    setFirstCall(true);
+    setOperandPressed(false);
+    setOperation(r.op);
   };
 
   // clear handler
@@ -97,69 +99,61 @@ export default function App() {
     setUserInput(newInput);
     setOperand(Operand.Null);
     setOperation("");
-    setPreviousValue("0");
+    setFirstCall(false);
+    setOperandPressed(false);
+    setPreviousValue("");
   };
   // handle new input is decimal
   const handleNewInputIsDecimal = () => {
-    if (Number(previousValue)) {
-      handleClear("0.");
+    if (firstCall) {
+      handleInputChange("0.");
       return;
     }
-
     !userInput.includes(".") && setUserInput(userInput + ".");
   };
 
   // input change handler
   const handleInputChange = (n: string) => {
-    // handle last value is divide by zero
     if (
       userInput === "Cannot devide by zero" ||
-      userInput === "Result is Undefined"
+      userInput === "Result is Undefined" ||
+      operation.slice(-1) === "="
     ) {
       handleClear(n);
       return;
-    }
-    // handle decimals
-    else if (
-      (userInput.slice(-1) === "0" && userInput.includes(".")) ||
-      userInput.slice(-1) === "."
-    ) {
-      setUserInput(userInput + n);
+    } else if (firstCall) {
+      setFirstCall(false);
+      setOperandPressed(false);
+      setUserInput(n);
       return;
     }
-
-    // handleEqual
-
-    let stringNumber = removeCommas(userInput).toString();
-    let newInput = addCommas(Number(stringNumber + n));
-
-    // if (previousFlag && stringNumber === n) {
-    //   console.log("here");
-    //   newInput = previousValue;
-    // } else
-    if (previousFlag) {
-      newInput = n;
+    const splitNumber = userInput.split(".");
+    if (splitNumber.length === 2) {
+      setUserInput(splitNumber[0] + "." + splitNumber[1] + n);
+    } else {
+      setUserInput(addCommas(Number(removeCommas(userInput) + n)));
     }
-
-    setPreviousFlag(false);
-    setUserInput(newInput);
+    setOperandPressed(false);
   };
 
   // operand change Handler
   const handleOperandChange = (o: Operand) => {
-    setOperand(o);
-    let newInput = userInput;
-    if (operation.slice(-1) !== "=" && previousValue && !previousFlag) {
-      const f = functionMap.get(operand) || nullOperand;
-      newInput = f(
-        Number(removeCommas(userInput)),
-        Number(removeCommas(previousValue))
+    let newValue = userInput;
+    if (o === operand && operation.slice(-1) !== "=" && !operandPressed) {
+      const { result } = handleOperation(
+        removeCommas(newValue),
+        removeCommas(previousValue),
+        o
       );
-      setUserInput(newInput);
+      newValue = result;
     }
-    setPreviousValue(newInput);
-    setPreviousFlag(true);
-    setOperation(newInput + o);
+    const newOperation = newValue + o;
+    setOperand(o);
+    setPreviousValue(newValue);
+    setUserInput(newValue);
+    setFirstCall(true);
+    setOperandPressed(true);
+    setOperation(newOperation);
   };
 
   // operand button click handlers
@@ -206,9 +200,6 @@ export default function App() {
   };
   const handleNineClick = () => {
     handleInputChange("9");
-  };
-  const handleDecimalClick = () => {
-    handleInputChange(".");
   };
 
   return (

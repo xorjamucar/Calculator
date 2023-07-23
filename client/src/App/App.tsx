@@ -35,11 +35,10 @@ export default function App() {
   const [result, setResult] = React.useState(0);
   const [history, setHistory] = React.useState<OperationHistory[]>([]);
   const [equalPressed, setEqualPressed] = React.useState(false);
-
   // disable operations
   const disableOperations = React.useMemo(
     () => isNaN(result) || !isFinite(result),
-    [userInput]
+    [result]
   );
   const representedResult = React.useMemo(
     () =>
@@ -129,12 +128,25 @@ export default function App() {
     setResult(newResult);
   }, []);
 
-  // result handler
-  const firstEqualClick = React.useCallback(
-    (input: string, o: Operand, h: OperationHistory[], res: number) => {
-      const mathOperand = operandMap.get(o) || "";
-      const calculation = res + mathOperand + input;
-      const newResult: number = Number(math.evaluate(calculation));
+  // result is invalid
+  const handleInvalidResult = React.useCallback(
+    (res: number, newResult: number, o: Operand) => {
+      setOperation(`${res} ${o}`);
+      setUserInput("");
+      setResult(newResult);
+    },
+    []
+  );
+  // result is valid
+  const handleValidResult = React.useCallback(
+    (
+      input: string,
+      o: Operand,
+      h: OperationHistory[],
+      res: number,
+      newResult: number,
+      newOperation: string
+    ) => {
       setHistory([
         ...h,
         {
@@ -144,10 +156,23 @@ export default function App() {
           op: o,
         },
       ]);
-      const newOperation = `${res} ${o} ${Number(input)} =`;
       setOperation(newOperation);
       setUserInput("");
       setResult(newResult);
+    },
+    []
+  );
+  // result handler
+  const firstEqualClick = React.useCallback(
+    (input: string, o: Operand, h: OperationHistory[], res: number) => {
+      const mathOperand = operandMap.get(o) || "";
+      const calculation = res + mathOperand + input;
+      const newResult: number = Number(math.evaluate(calculation));
+      const newOperation = `${res} ${o} ${Number(input)} =`;
+
+      !isNaN(newResult) && isFinite(newResult)
+        ? handleValidResult(input, o, h, res, newResult, newOperation)
+        : handleInvalidResult(res, newResult, o);
       setEqualPressed(true);
       setOperandPressed(false);
     },
@@ -190,7 +215,7 @@ export default function App() {
           history,
           equalPressed
         );
-  }, [userInput, operand, history, result, equalPressed]);
+  }, [userInput, operand, history, result, equalPressed, disableOperations]);
 
   // handle new input is decimal
 
@@ -206,21 +231,13 @@ export default function App() {
   // handleResult by operand
   const handleResultByOperand = React.useCallback(
     (input: string, o: Operand, res: number, h: OperationHistory[]) => {
-      console.log([input, o, res]);
       const mathOperand = operandMap.get(o) || "";
-      const newResult = Number(math.evaluate(input + mathOperand + res));
-      setHistory([
-        ...h,
-        {
-          firstValue: res,
-          secondValue: Number(input),
-          r: newResult,
-          op: o,
-        },
-      ]);
-      setResult(newResult);
+      const newResult = Number(math.evaluate(res + mathOperand + input));
+      const newOperation = `${newResult} ${o}`;
+      !isNaN(newResult) && isFinite(newResult)
+        ? handleValidResult(input, o, h, res, newResult, newOperation)
+        : handleInvalidResult(res, newResult, o);
       setOperandPressed(true);
-      setOperation(`${newResult} ${o}`);
       setUserInput("");
     },
     []

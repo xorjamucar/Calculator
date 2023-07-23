@@ -7,122 +7,232 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import EqualButton from "./Components/EqualButton";
-import { Operand, removeCommas, handleOperation, addCommas } from "./functions";
+import {
+  Operand,
+  decimalLengthLimiter,
+  handleOperation,
+  integerLengthLimiter,
+  operandMap,
+} from "./functions";
 import NumberButton from "./Components/NumberButton";
 import OperandButton from "./Components/OperandButton";
 import DecimalButton from "./Components/DecimalButton";
 import ClearButton from "./Components/ClearButton";
-
+import ResultText from "./Components/ResultText";
+import { all, create, equal } from "mathjs";
+var math = create(all, { number: "BigNumber", precision: 16 });
+interface OperationHistory {
+  firstValue: number;
+  secondValue: number | null;
+  r: number;
+  op: Operand;
+}
 export default function App() {
-  const [userInput, setUserInput] = React.useState("0");
+  const [userInput, setUserInput] = React.useState("");
   const [operand, setOperand] = React.useState<Operand>(Operand.Null);
   const [operation, setOperation] = React.useState("");
-  const [previousValue, setPreviousValue] = React.useState("0");
-  const [firstCall, setFirstCall] = React.useState(false);
   const [operandPressed, setOperandPressed] = React.useState(false);
-  // has to Reset
-  const hasToReset = React.useMemo(
-    () =>
-      ["Cannot devide by zero", "Result is Undefined"].includes(userInput) ||
-      (operation.slice(-1) === "=" && operand !== Operand.Null),
-    [userInput, operation, operand]
-  );
+  const [result, setResult] = React.useState(0);
+  const [history, setHistory] = React.useState<OperationHistory[]>([]);
+  const [equalPressed, setEqualPressed] = React.useState(false);
+
   // disable operations
   const disableOperations = React.useMemo(
-    () =>
-      userInput === "Cannot devide by zero" ||
-      userInput === "Result is Undefined",
+    () => isNaN(result) || !isFinite(result),
     [userInput]
+  );
+  const representedResult = React.useMemo(
+    () =>
+      isNaN(result)
+        ? "Result is Undefined"
+        : !isFinite(result)
+        ? "Cannot Devide by Zero"
+        : userInput || result,
+    [userInput, result]
   );
   // clear handler
   const handleClear = React.useCallback((newInput: string) => {
     setUserInput(newInput);
     setOperand(Operand.Null);
     setOperation("");
-    setFirstCall(false);
+    setEqualPressed(false);
+    setResult(0);
     setOperandPressed(false);
-    setPreviousValue("0");
-  }, []);
-
-  // firstCallHandler
-  const handleFirstCall = React.useCallback((n: string) => {
-    setFirstCall(false);
-    setOperandPressed(false);
-    setUserInput(n);
   }, []);
 
   // changeInput
-  const changeInput = React.useCallback(
-    (n: string) => {
-      const splitNumber = userInput.split(".");
-      if (splitNumber.length === 2) {
-        setUserInput(splitNumber[0] + "." + splitNumber[1] + n);
-      } else {
-        console.log(splitNumber);
-        setUserInput(addCommas(Number(removeCommas(userInput) + n)));
-      }
-      setOperandPressed(false);
-    },
-    [userInput]
-  );
+  const changeInput = React.useCallback((n: string, input: string) => {
+    const splitNumber = input.split(".");
+    if (splitNumber.length === 2) {
+      setUserInput(decimalLengthLimiter(splitNumber[0], splitNumber[1], n));
+    } else {
+      setUserInput(integerLengthLimiter(splitNumber[0], n));
+    }
+    // setOperandPressed(false);
+    setEqualPressed(false);
+  }, []);
 
   // input change handler
   const handleInputChange = React.useCallback(
     (n: string) => {
-      hasToReset
+      equalPressed || disableOperations
         ? handleClear(n)
-        : firstCall
-        ? handleFirstCall(n)
-        : changeInput(n);
+        : changeInput(n, userInput);
     },
-    [userInput, hasToReset, firstCall]
+    [userInput, equalPressed, disableOperations]
   );
+  // handleDecimal
+  const handleNewInputIsDecimal = React.useCallback(() => {
+    !userInput.includes(".") && setUserInput((userInput || "0") + ".");
+  }, [userInput]);
+  // result without operand
+
+  const continueWithoutOperand = React.useCallback((h: OperationHistory[]) => {
+    const lastOperation = h[h.length - 1];
+    setHistory([...h, lastOperation]);
+  }, []);
+  const firstWithoutOperand = React.useCallback(
+    (h: OperationHistory[], input: string) => {
+      console.log(input);
+      setHistory([
+        ...h,
+        {
+          firstValue: Number(input),
+          secondValue: null,
+          r: Number(input),
+          op: Operand.Null,
+        },
+      ]);
+      setOperation(Number(input) + "=");
+      setUserInput("");
+      setOperandPressed(true);
+      setResult(Number(input));
+    },
+    []
+  );
+  // continue Result
+  const continueCalculation = React.useCallback((h: OperationHistory[]) => {
+    const { secondValue, r, op, firstValue } = h[h.length - 1];
+    const mathOperand = operandMap.get(op) || "";
+    const calculation = `${r} ${mathOperand} ${secondValue || firstValue}`;
+    const newResult: number = Number(math.evaluate(calculation));
+    setHistory([
+      ...h,
+      {
+        firstValue: secondValue || firstValue,
+        secondValue: secondValue,
+        r: newResult,
+        op: op,
+      },
+    ]);
+    setOperation(`${r} ${op} ${secondValue} =`);
+    setResult(newResult);
+  }, []);
 
   // result handler
+  const firstEqualClick = React.useCallback(
+    (input: string, o: Operand, h: OperationHistory[], res: number) => {
+      const mathOperand = operandMap.get(o) || "";
+      const calculation = res + mathOperand + input;
+      const newResult: number = Number(math.evaluate(calculation));
+      setHistory([
+        ...h,
+        {
+          firstValue: res,
+          secondValue: Number(input),
+          r: newResult,
+          op: o,
+        },
+      ]);
+      const newOperation = `${res} ${o} ${Number(input)} =`;
+      setOperation(newOperation);
+      setUserInput("");
+      setResult(newResult);
+      setEqualPressed(true);
+      setOperandPressed(false);
+    },
+    []
+  );
+
+  const handleResultWithOperand = React.useCallback(
+    (
+      input: string,
+      o: Operand,
+      h: OperationHistory[],
+      res: number,
+      eq: boolean
+    ) => {
+      eq ? continueCalculation(h) : firstEqualClick(input, o, h, res);
+    },
+    []
+  );
+
+  const handleResultWithoutOperand = React.useCallback(
+    (input: string, h: OperationHistory[], eq: boolean) => {
+      eq ? continueWithoutOperand(h) : firstWithoutOperand(h, input);
+    },
+    []
+  );
+
   const handleResult = React.useCallback(() => {
-    let [prev, current] = [
-      removeCommas(previousValue),
-      removeCommas(userInput),
-    ];
-    operation.slice(-1) === "=" &&
-      operand &&
-      ([prev, current] = [current, prev]);
-    const r = handleOperation(current, prev, operand);
-    setPreviousValue(addCommas(current));
-    setUserInput(r.result);
-    setFirstCall(true);
-    setOperandPressed(false);
-    setOperation(r.op);
-  }, [userInput, previousValue, operation, operand]);
+    disableOperations
+      ? handleClear("")
+      : operand !== Operand.Null
+      ? handleResultWithOperand(
+          userInput || result.toString(),
+          operand,
+          history,
+          result,
+          equalPressed
+        )
+      : handleResultWithoutOperand(
+          userInput || result.toString(),
+          history,
+          equalPressed
+        );
+  }, [userInput, operand, history, result, equalPressed]);
 
   // handle new input is decimal
-  const handleNewInputIsDecimal = React.useCallback(() => {
-    firstCall
-      ? handleInputChange("0.")
-      : !userInput.includes(".") && setUserInput(userInput + ".");
-  }, [userInput, firstCall]);
 
+  const handleFirstOperandPress = (input: string, o: Operand) => {
+    setResult(Number(input));
+    setOperand(o);
+    setUserInput("");
+    setEqualPressed(false);
+    setOperandPressed(true);
+    setOperation(`${Number(input)} ${o}`);
+  };
+
+  // handleResult by operand
+  const handleResultByOperand = React.useCallback(
+    (input: string, o: Operand, res: number, h: OperationHistory[]) => {
+      console.log([input, o, res]);
+      const mathOperand = operandMap.get(o) || "";
+      const newResult = Number(math.evaluate(input + mathOperand + res));
+      setHistory([
+        ...h,
+        {
+          firstValue: res,
+          secondValue: Number(input),
+          r: newResult,
+          op: o,
+        },
+      ]);
+      setResult(newResult);
+      setOperandPressed(true);
+      setOperation(`${newResult} ${o}`);
+      setUserInput("");
+    },
+    []
+  );
   // operand change Handler
   const handleOperandChange = React.useCallback(
     (o: Operand) => {
-      let newValue = userInput;
-      if (o === operand && operation.slice(-1) !== "=" && !operandPressed) {
-        const { result } = handleOperation(
-          removeCommas(newValue),
-          removeCommas(previousValue),
-          o
-        );
-        newValue = result;
-      }
-      const newOperation = removeCommas(newValue) + o;
-      setOperand(o);
-      setPreviousValue(newValue);
-      setUserInput(newValue);
-      setFirstCall(true);
-      setOperandPressed(true);
-      setOperation(newOperation);
+      userInput && operandPressed
+        ? handleResultByOperand(userInput, o, result, history)
+        : handleFirstOperandPress(userInput || result.toString(), o);
     },
-    [operation, operandPressed, userInput]
+    [userInput, result, operandPressed, history]
   );
 
   return (
@@ -146,12 +256,13 @@ export default function App() {
           inputProps={{ style: { textAlign: "end" } }}
         />
         <TextField
-          value={userInput}
+          value={representedResult}
           InputProps={{
             readOnly: true,
           }}
           inputProps={{ style: { textAlign: "end" } }}
         />
+        {/* <ResultText userInput={userInput} result={result} /> */}
         <Stack direction="row" spacing={1}>
           <NumberButton num="7" handleInputChange={handleInputChange} />
           <NumberButton num="8" handleInputChange={handleInputChange} />

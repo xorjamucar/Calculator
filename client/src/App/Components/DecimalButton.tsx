@@ -31,10 +31,10 @@ export default function DecimalButton({
         },
       }}
       onClick={handleNewInputIsDecimal}
-      disabled={
-        userInput === "Cannot devide by zero" ||
-        userInput === "Result is Undefined"
-      }
+      // disabled={
+      //   userInput === "Cannot devide by zero" ||
+      //   userInput === "Result is Undefined"
+      // }
     >
       .
     </Button>

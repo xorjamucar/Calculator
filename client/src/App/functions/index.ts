@@ -7,7 +7,7 @@ export enum Operand {
   Mult = "×",
   Null = "",
 }
-
+var math = create(all, { number: "BigNumber" });
 export var operandMap = new Map([
   [Operand.Sum, "+"],
   [Operand.Sub, "-"],
@@ -15,48 +15,10 @@ export var operandMap = new Map([
   [Operand.Mult, "*"],
 ]);
 
-interface OperationHandlerReturn {
-  result: string;
-  op: string;
-}
-var math = create(all, { number: "BigNumber", precision: 16 });
-// math.config({ number: "BigNumber", precision: 16 });
-export function handleOperation(
-  input: number,
-  previousNumber: number,
-  o: Operand
-): OperationHandlerReturn {
-  var mathOperand = operandMap.get(o);
-  if (previousNumber === 0 && input === 0 && o === Operand.Div) {
-    return {
-      result: "Result is Undefined",
-      op: `${previousNumber} ${o}`,
-    };
-  } else if (input === 0 && o === Operand.Div)
-    return { result: "Cannot devide by zero", op: `${previousNumber} ${o}` };
-  else if (!mathOperand) return { result: "" + input, op: input + "=" };
-  const result: number = math.evaluate(
-    `${previousNumber}  ${mathOperand} ${input}`
-  );
-  let parsedResult = result.toFixed(16);
-  result >= 10 ** 16 && (parsedResult = result.toExponential());
-  let prev = previousNumber.toString();
-  previousNumber >= 10 ** 16 && (prev = previousNumber.toExponential());
-  const op = `${prev} ${o} ${input} =`;
-  return {
-    result: parsedResult,
-    op: op,
-  };
-}
-
-export function removeCommas(x: string) {
-  let r = Number(x.replace(/,/g, ""));
-  return r;
-}
-export function integerLengthLimiter(x: string, newNumber: string) {
-  let currentNumber = Number(x);
-  x.length < 16 && (currentNumber = currentNumber * 10 + Number(newNumber));
-  return currentNumber.toString();
+// input limiting functions
+export function integerLengthLimiter(currentNumber: number, newNumber: number) {
+  if (currentNumber >= 10 ** 16) return currentNumber;
+  return currentNumber * 10 + newNumber;
 }
 
 export function decimalLengthLimiter(
@@ -64,9 +26,40 @@ export function decimalLengthLimiter(
   decimalPart: string,
   newNumber: string
 ) {
-  const currentLength =
-    integerPart.length * Number(integerPart !== "0") + decimalPart.length;
-  let newValue = integerPart + "." + decimalPart;
-  currentLength < 16 && (newValue += newNumber);
-  return newValue;
+  const length =
+    16 - integerPart.length * Number(integerPart !== "0") - decimalPart.length;
+  if (length === 0) return decimalPart;
+  return decimalPart + newNumber;
+}
+
+export function inputLimiter(input: string, n: string) {
+  let numberSplit = input.split(".");
+  const integerPart = numberSplit.shift() || "";
+  let newNumber = Number(integerPart);
+  numberSplit.length === 0 &&
+    (newNumber = integerLengthLimiter(newNumber, Number(n)));
+  let decimalPart = "";
+  if (numberSplit.length === 1)
+    decimalPart = "." + decimalLengthLimiter(integerPart, numberSplit[0], n);
+  const newInput = newNumber + decimalPart;
+  newNumber = math.evaluate(`${newNumber}${decimalPart}`);
+  return { newInput, newNumber };
+}
+
+// formating functions
+export function addCommas(x: number) {
+  return x.toLocaleString("en-US", {
+    maximumFractionDigits: 15,
+  });
+}
+export function resultFormating(result: number, input: string) {
+  const splitNumber = input.split(".");
+  const integerPart = splitNumber.shift() || "";
+  const represent = Number(integerPart || result);
+  let n = integerPart || result.toString();
+  represent > 10 ** 2 && (n = addCommas(represent));
+  represent > 10 ** 16 && (n = represent.toExponential());
+  splitNumber.length > 0 && (n += "." + splitNumber[0]);
+
+  return n;
 }

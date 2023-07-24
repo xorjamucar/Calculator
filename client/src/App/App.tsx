@@ -52,11 +52,14 @@ export default function App() {
   // changeInput
   // handleFirst input
   const handleFirstInput = React.useCallback(
-    (n: string, input: string, o: Operand) => {
+    (n: string, input: string, o: Operand, res: number | null) => {
       const { newInput, newNumber } = inputLimiter(input, n);
       setUserInput(newInput);
       setFirstInput(newNumber);
-      o !== Operand.Null && setOperation("");
+      if (o !== Operand.Null) {
+        setOperation("");
+      }
+      // o !== Operand.Null && setOperation("");
     },
     []
   );
@@ -72,7 +75,7 @@ export default function App() {
     (n: string) => {
       operand !== Operand.Null && result === null
         ? handleSecondInput(n, userInput)
-        : handleFirstInput(n, userInput, operand);
+        : handleFirstInput(n, userInput, operand, result);
     },
     [userInput, operand, result]
   );
@@ -93,7 +96,7 @@ export default function App() {
         calculation += mathOperand + second;
         newOperation = `${first} ${o} ${second} =`;
       }
-      const newResult: number = Number(math.evaluate(calculation));
+      const newResult: number = math.evaluate(calculation);
       second !== null && setResult(newResult);
       setFirstInput(newResult);
       setOperation(newOperation);
@@ -111,8 +114,8 @@ export default function App() {
   const handleFirstOperandPress = (input: string, o: Operand) => {
     setOperand(o);
     setUserInput("");
-    setOperation(`${Number(input)} ${o}`);
-    setSecondInput(Number(input));
+    setOperation(`${math.evaluate(input)} ${o}`);
+    setSecondInput(math.evaluate(input));
     setResult(null);
   };
 
@@ -121,11 +124,10 @@ export default function App() {
     (o: Operand, first: number, second: number) => {
       const mathOperand = operandMap.get(o) || "";
       let calculation = first + mathOperand + second;
-      const newResult: number = Number(math.evaluate(calculation));
+      const newResult: number = math.evaluate(calculation);
       let newOperation = `${newResult} ${o}`;
-      // setResult(newResult);
       setFirstInput(newResult);
-      setSecondInput(null);
+      setSecondInput(newResult);
       setOperation(newOperation);
       setUserInput("");
     },
@@ -134,7 +136,7 @@ export default function App() {
   // operand change Handler
   const handleOperandChange = React.useCallback(
     (o: Operand) => {
-      userInput && secondInput !== null
+      userInput && secondInput !== null && operation
         ? handleResultByOperand(o, firstInput, secondInput)
         : handleFirstOperandPress(userInput || firstInput.toString(), o);
     },

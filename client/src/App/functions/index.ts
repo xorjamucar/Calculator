@@ -1,4 +1,4 @@
-import { all, create } from "mathjs";
+import { all, create, exp, number } from "mathjs";
 
 export enum Operand {
   Sum = "+",
@@ -52,14 +52,38 @@ export function addCommas(x: number) {
     maximumFractionDigits: 15,
   });
 }
-export function resultFormating(result: number, input: string) {
-  const splitNumber = input.split(".");
-  const integerPart = splitNumber.shift() || "";
-  const represent = Number(integerPart || result);
-  let n = integerPart || result.toString();
-  represent > 10 ** 2 && (n = addCommas(represent));
-  represent > 10 ** 16 && (n = represent.toExponential());
-  splitNumber.length > 0 && (n += "." + splitNumber[0]);
 
-  return n;
+export function formatDecimal(result: string) {
+  let reversedString = result.split("").reverse();
+  for (let index = 0; index < reversedString.length; index++) {
+    const element = reversedString[index];
+    if (element !== "0") break;
+    reversedString.shift();
+  }
+  return reversedString.reverse().join("");
+}
+export function formatExponential(result: string) {
+  const expoSplit = result.split("e");
+  const expoNumber = Number(expoSplit[1]);
+  const numberSplit = expoSplit[0].split(".");
+  let integerPart = numberSplit.shift() || "";
+  let decimalPart = numberSplit[0].substring(0, 15);
+  const numberIsInt = Number(expoNumber >= 0);
+  const numberIsDec = Number(expoNumber < 0);
+  const integerPartIsZero = Number(integerPart === "0");
+  const belongsToInteger = decimalPart.substring(0, expoNumber * numberIsInt);
+  integerPart += belongsToInteger;
+  const belongsToDecimal = new Array(
+    math.abs(expoNumber) * numberIsDec + 1
+  ).join("0");
+  decimalPart += belongsToDecimal;
+  console.log(decimalPart);
+  // console.log(integerPart);
+  // console.log(belongsToInteger);
+}
+
+export function resultFormating(result: number) {
+  // formatExponential(result.toExponential(15));
+  // return result.toExponential(15);
+  return parseFloat(result.toFixed(16));
 }

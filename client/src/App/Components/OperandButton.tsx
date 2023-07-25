@@ -18,9 +18,11 @@ export default function OperandButton({
     <Button
       variant="outlined"
       disableRipple
+      fullWidth
       sx={{
         fontSize: 20,
         fontWeight: "1",
+        maxHeight: "100%",
         backgroundColor: "#f5f5f5",
         boxShadow: 1,
         color: "black",

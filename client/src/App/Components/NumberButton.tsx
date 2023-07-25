@@ -32,10 +32,12 @@ export default function NumberButton({
       variant="outlined"
       onClick={handleClick}
       disableRipple
+      fullWidth
       sx={{
         backgroundColor: "white",
         boxShadow: 1,
         color: "black",
+        maxHeight: "100%",
         borderColor: "#bdbdbd",
         "&:hover": {
           backgroundColor: "#eeeeee",

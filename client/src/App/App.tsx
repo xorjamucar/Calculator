@@ -7,12 +7,22 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import EqualButton from "./Components/EqualButton";
-import { Operand, inputLimiter, operandMap } from "./functions";
+import {
+  Operand,
+  inputLimiter,
+  operandMap,
+  resultFormating,
+} from "./functions";
 import NumberButton from "./Components/NumberButton";
 import OperandButton from "./Components/OperandButton";
 import DecimalButton from "./Components/DecimalButton";
 import ClearButton from "./Components/ClearButton";
 import { all, create } from "mathjs";
+import FakeOperandButton from "./Components/FakeOperandButton";
+import BackSpaceButton from "./Components/BackSpaceButton";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+import { Typography } from "@mui/material";
 var math = create(all, { number: "BigNumber" });
 interface OperationHistory {
   firstValue: number;
@@ -27,7 +37,9 @@ export default function App() {
   const [firstInput, setFirstInput] = React.useState(0);
   const [secondInput, setSecondInput] = React.useState<null | number>(null);
   const [result, setResult] = React.useState<null | number>(null);
-
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.up("sm"));
+  console.log(matches);
   // disable operations
   const disableOperations = React.useMemo(
     () => false,
@@ -35,8 +47,8 @@ export default function App() {
     [result]
   );
   const representedResult = React.useMemo(
-    () => userInput || firstInput,
-    [userInput, result, firstInput]
+    () => resultFormating(firstInput),
+    [firstInput]
   );
 
   // clear handler
@@ -90,17 +102,20 @@ export default function App() {
     (o: Operand, first: number, second: number | null) => {
       const mathOperand = operandMap.get(o) || "";
       let calculation = first.toString();
-      let newOperation = `${first} =`;
+      let newOperation = `${resultFormating(first)} =`;
       // let newResult = first
       if (second !== null) {
         calculation += mathOperand + second;
-        newOperation = `${first} ${o} ${second} =`;
+        newOperation = `${resultFormating(first)} ${o} ${resultFormating(
+          second
+        )} =`;
       }
       const newResult: number = math.evaluate(calculation);
       second !== null && setResult(newResult);
-      setFirstInput(newResult);
+
       setOperation(newOperation);
       setUserInput("");
+      setFirstInput(newResult);
     },
     []
   );
@@ -114,7 +129,7 @@ export default function App() {
   const handleFirstOperandPress = (input: string, o: Operand) => {
     setOperand(o);
     setUserInput("");
-    setOperation(`${math.evaluate(input)} ${o}`);
+    setOperation(`${resultFormating(math.evaluate(input))} ${o}`);
     setSecondInput(math.evaluate(input));
     setResult(null);
   };
@@ -125,7 +140,7 @@ export default function App() {
       const mathOperand = operandMap.get(o) || "";
       let calculation = first + mathOperand + second;
       const newResult: number = math.evaluate(calculation);
-      let newOperation = `${newResult} ${o}`;
+      let newOperation = `${resultFormating(newResult)} ${o}`;
       setFirstInput(newResult);
       setSecondInput(newResult);
       setOperation(newOperation);
@@ -147,82 +162,195 @@ export default function App() {
     <Box
       sx={{
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
         minHeight: "100vh",
-        alignItems: "center",
-        justifyContent: "center",
         backgroundColor: "#eeeeee",
-        // width: 280,
+        width: "100%",
       }}
     >
-      <Stack direction="column" spacing={1}>
-        <TextField
-          value={operation}
-          InputProps={{
-            readOnly: true,
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100%",
+          width: matches ? "65%" : "100%",
+          gap: 0.5,
+          margin: 1,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            height: "12%",
+            width: "100%",
+            gap: 1,
           }}
-          inputProps={{ style: { textAlign: "end" } }}
-        />
-        <TextField
-          value={representedResult}
-          InputProps={{
-            readOnly: true,
-          }}
-          inputProps={{ style: { textAlign: "end" } }}
-        />
-        {/* <ResultText userInput={userInput} result={result} /> */}
-        <Stack direction="row" spacing={1}>
-          <NumberButton num="7" handleInputChange={handleInputChange} />
-          <NumberButton num="8" handleInputChange={handleInputChange} />
-          <NumberButton num="9" handleInputChange={handleInputChange} />
-          <ClearButton handleClear={handleClear} />
-        </Stack>
-        <Stack direction="row" spacing={1}>
-          <NumberButton num="4" handleInputChange={handleInputChange} />
-          <NumberButton num="5" handleInputChange={handleInputChange} />
-          <NumberButton num="6" handleInputChange={handleInputChange} />
-          <OperandButton
-            operand={Operand.Mult}
-            handleOperandChange={handleOperandChange}
-            disabled={disableOperations}
+        >
+          <TextField
+            value={operation}
+            fullWidth
+            InputProps={{
+              readOnly: true,
+            }}
+            inputProps={{ style: { textAlign: "end" } }}
           />
-        </Stack>
-        <Stack direction="row" spacing={1}>
-          <NumberButton num="1" handleInputChange={handleInputChange} />
-          <NumberButton num="2" handleInputChange={handleInputChange} />
-          <NumberButton num="3" handleInputChange={handleInputChange} />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            height: "12%",
+            width: "100%",
+            gap: 1,
+          }}
+        >
+          <TextField
+            fullWidth
+            value={userInput || representedResult}
+            InputProps={{
+              readOnly: true,
+            }}
+            inputProps={{ style: { textAlign: "end" } }}
+          />
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            height: "12%",
+            width: "100%",
+            gap: 1,
+          }}
+        >
+          <FakeOperandButton operand="%" />
+          <FakeOperandButton operand="CE" />
+          <ClearButton handleClear={handleClear} />
+          <BackSpaceButton />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            height: "12%",
+            width: "100%",
+            gap: 1,
+
+            justifyContent: "space-around",
+          }}
+        >
+          <FakeOperandButton operand="¹/x" />
+          <FakeOperandButton operand="x²" />
+          <FakeOperandButton operand="²√" />
           <OperandButton
             operand={Operand.Div}
             handleOperandChange={handleOperandChange}
             disabled={disableOperations}
           />
-        </Stack>
-        <Stack direction="row" spacing={1}>
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            height: "12%",
+            width: "100%",
+            gap: 1,
+
+            justifyContent: "space-around",
+          }}
+        >
+          <NumberButton num="7" handleInputChange={handleInputChange} />
+          <NumberButton num="8" handleInputChange={handleInputChange} />
+          <NumberButton num="9" handleInputChange={handleInputChange} />
+
+          <OperandButton
+            operand={Operand.Mult}
+            handleOperandChange={handleOperandChange}
+            disabled={disableOperations}
+          />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            height: "12%",
+            width: "100%",
+            gap: 1,
+
+            justifyContent: "space-around",
+          }}
+        >
+          <NumberButton num="4" handleInputChange={handleInputChange} />
+          <NumberButton num="5" handleInputChange={handleInputChange} />
+          <NumberButton num="6" handleInputChange={handleInputChange} />
           <OperandButton
             operand={Operand.Sub}
             handleOperandChange={handleOperandChange}
             disabled={disableOperations}
           />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            height: "12%",
+            width: "100%",
+            gap: 1,
 
-          <NumberButton num="0" handleInputChange={handleInputChange} />
+            justifyContent: "space-around",
+          }}
+        >
+          <NumberButton num="1" handleInputChange={handleInputChange} />
+          <NumberButton num="2" handleInputChange={handleInputChange} />
+          <NumberButton num="3" handleInputChange={handleInputChange} />
+
           <OperandButton
             operand={Operand.Sum}
             handleOperandChange={handleOperandChange}
             disabled={disableOperations}
           />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            height: "12%",
+            width: "100%",
+            gap: 1,
+
+            justifyContent: "space-around",
+          }}
+        >
+          <FakeOperandButton operand="+/-" />
+          <NumberButton num="0" handleInputChange={handleInputChange} />
+
           <DecimalButton
             userInput={userInput}
             handleNewInputIsDecimal={handleNewInputIsDecimal}
           />
-        </Stack>
-        <Stack direction="row">
+
           <EqualButton
             handleResult={handleResult}
             handleClear={handleClear}
             userInput={userInput}
           />
-        </Stack>
-      </Stack>
+        </Box>
+      </Box>
+      {matches && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100%",
+            width: "35%",
+            gap: 0.5,
+            margin: 1,
+          }}
+        >
+          <Typography variant="h6">History</Typography>
+        </Box>
+      )}
     </Box>
   );
 }

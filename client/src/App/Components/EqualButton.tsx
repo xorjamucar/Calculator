@@ -24,6 +24,7 @@ export default function EqualButton({
       sx={{
         fontSize: 20,
         boxShadow: 1,
+        maxHeight: "100%",
         borderColor: "#bdbdbd",
         "&:hover": {
           backgroundColor: "#1e88e5",

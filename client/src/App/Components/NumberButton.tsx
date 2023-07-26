@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "@mui/material/Button";
+import { CalculatorButton } from "../Styles";
 
 interface NumberButtonProps {
   num: string;
@@ -10,47 +11,25 @@ export default function NumberButton({
   handleInputChange,
 }: NumberButtonProps) {
   const handleClick = () => {
-    // if (
-    //   userInput === "Cannot devide by zero" ||
-    //   userInput === "Result is Undefined" ||
-    //   (operation.slice(-1) === "=" && operand)
-    // ) {
-    //   handleClear(n);
-    //   return;
-    // } else if (firstCall) {
-    //   handleFirstCall(n);
-    //   return;
-    // }
-    // reset
-    //   ? handleClear(num)
-    //   : firstCall
-    //   ? handleFirstCall(num)
     handleInputChange(num);
   };
   return (
-    <Button
+    <CalculatorButton
       variant="outlined"
       onClick={handleClick}
       disableRipple
       fullWidth
       sx={{
+        fontSize: 20,
+        fontWeight: "1",
+        boxShadow: 2,
         backgroundColor: "white",
-        boxShadow: 1,
-        color: "black",
-        maxHeight: "100%",
-        borderColor: "#bdbdbd",
-        "&:hover": {
-          backgroundColor: "#eeeeee",
-          borderColor: "#bdbdbd",
-        },
         "&:active": {
-          backgroundColor: "#eeeeee",
-          borderColor: "#bdbdbd",
           boxShadow: 0,
         },
       }}
     >
       {num}
-    </Button>
+    </CalculatorButton>
   );
 }

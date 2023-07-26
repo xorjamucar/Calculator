@@ -23,7 +23,7 @@ export default function EqualButton({
       disableRipple
       sx={{
         fontSize: 20,
-        boxShadow: 1,
+        boxShadow: 2,
         maxHeight: "100%",
         borderColor: "#bdbdbd",
         "&:hover": {

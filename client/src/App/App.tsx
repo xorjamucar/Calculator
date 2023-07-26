@@ -3,9 +3,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
-import Box from "@mui/material/Box";
 import EqualButton from "./Components/EqualButton";
 import {
   Operand,
@@ -23,11 +21,12 @@ import BackSpaceButton from "./Components/BackSpaceButton";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { Typography } from "@mui/material";
+import { ButtonRow, CalculatorBox, HistoryBox, PageBox } from "./Styles";
 var math = create(all, { number: "BigNumber" });
 interface OperationHistory {
   firstValue: number;
   secondValue: null | number;
-  r: number;
+  r: number | null;
   op: Operand;
 }
 export default function App() {
@@ -71,7 +70,6 @@ export default function App() {
       if (o !== Operand.Null) {
         setOperation("");
       }
-      // o !== Operand.Null && setOperation("");
     },
     []
   );
@@ -126,13 +124,16 @@ export default function App() {
 
   // press operand first time
 
-  const handleFirstOperandPress = (input: string, o: Operand) => {
-    setOperand(o);
-    setUserInput("");
-    setOperation(`${resultFormating(math.evaluate(input))} ${o}`);
-    setSecondInput(math.evaluate(input));
-    setResult(null);
-  };
+  const handleFirstOperandPress = React.useCallback(
+    (input: string, o: Operand) => {
+      setOperand(o);
+      setUserInput("");
+      setOperation(`${resultFormating(math.evaluate(input))} ${o}`);
+      setSecondInput(math.evaluate(input));
+      setResult(null);
+    },
+    []
+  );
 
   //result by operand
   const handleResultByOperand = React.useCallback(
@@ -159,34 +160,9 @@ export default function App() {
   );
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "row",
-        minHeight: "100vh",
-        backgroundColor: "#eeeeee",
-        width: "100%",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100%",
-          width: matches ? "65%" : "100%",
-          gap: 0.5,
-          margin: 1,
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            height: "12%",
-            width: "100%",
-            gap: 1,
-          }}
-        >
+    <PageBox>
+      <CalculatorBox matches={matches}>
+        <ButtonRow>
           <TextField
             value={operation}
             fullWidth
@@ -195,16 +171,8 @@ export default function App() {
             }}
             inputProps={{ style: { textAlign: "end" } }}
           />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            height: "12%",
-            width: "100%",
-            gap: 1,
-          }}
-        >
+        </ButtonRow>
+        <ButtonRow>
           <TextField
             fullWidth
             value={userInput || representedResult}
@@ -213,33 +181,15 @@ export default function App() {
             }}
             inputProps={{ style: { textAlign: "end" } }}
           />
-        </Box>
+        </ButtonRow>
 
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            height: "12%",
-            width: "100%",
-            gap: 1,
-          }}
-        >
+        <ButtonRow>
           <FakeOperandButton operand="%" />
           <FakeOperandButton operand="CE" />
           <ClearButton handleClear={handleClear} />
           <BackSpaceButton />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            height: "12%",
-            width: "100%",
-            gap: 1,
-
-            justifyContent: "space-around",
-          }}
-        >
+        </ButtonRow>
+        <ButtonRow>
           <FakeOperandButton operand="¹/x" />
           <FakeOperandButton operand="x²" />
           <FakeOperandButton operand="²√" />
@@ -248,18 +198,8 @@ export default function App() {
             handleOperandChange={handleOperandChange}
             disabled={disableOperations}
           />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            height: "12%",
-            width: "100%",
-            gap: 1,
-
-            justifyContent: "space-around",
-          }}
-        >
+        </ButtonRow>
+        <ButtonRow>
           <NumberButton num="7" handleInputChange={handleInputChange} />
           <NumberButton num="8" handleInputChange={handleInputChange} />
           <NumberButton num="9" handleInputChange={handleInputChange} />
@@ -269,18 +209,8 @@ export default function App() {
             handleOperandChange={handleOperandChange}
             disabled={disableOperations}
           />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            height: "12%",
-            width: "100%",
-            gap: 1,
-
-            justifyContent: "space-around",
-          }}
-        >
+        </ButtonRow>
+        <ButtonRow>
           <NumberButton num="4" handleInputChange={handleInputChange} />
           <NumberButton num="5" handleInputChange={handleInputChange} />
           <NumberButton num="6" handleInputChange={handleInputChange} />
@@ -289,18 +219,8 @@ export default function App() {
             handleOperandChange={handleOperandChange}
             disabled={disableOperations}
           />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            height: "12%",
-            width: "100%",
-            gap: 1,
-
-            justifyContent: "space-around",
-          }}
-        >
+        </ButtonRow>
+        <ButtonRow>
           <NumberButton num="1" handleInputChange={handleInputChange} />
           <NumberButton num="2" handleInputChange={handleInputChange} />
           <NumberButton num="3" handleInputChange={handleInputChange} />
@@ -310,18 +230,8 @@ export default function App() {
             handleOperandChange={handleOperandChange}
             disabled={disableOperations}
           />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            height: "12%",
-            width: "100%",
-            gap: 1,
-
-            justifyContent: "space-around",
-          }}
-        >
+        </ButtonRow>
+        <ButtonRow>
           <FakeOperandButton operand="+/-" />
           <NumberButton num="0" handleInputChange={handleInputChange} />
 
@@ -335,22 +245,13 @@ export default function App() {
             handleClear={handleClear}
             userInput={userInput}
           />
-        </Box>
-      </Box>
+        </ButtonRow>
+      </CalculatorBox>
       {matches && (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100%",
-            width: "35%",
-            gap: 0.5,
-            margin: 1,
-          }}
-        >
+        <HistoryBox>
           <Typography variant="h6">History</Typography>
-        </Box>
+        </HistoryBox>
       )}
-    </Box>
+    </PageBox>
   );
 }

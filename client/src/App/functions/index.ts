@@ -78,8 +78,6 @@ export function formatExponential(result: string) {
   ).join("0");
   decimalPart += belongsToDecimal;
   console.log(decimalPart);
-  // console.log(integerPart);
-  // console.log(belongsToInteger);
 }
 
 export function resultFormating(result: number) {

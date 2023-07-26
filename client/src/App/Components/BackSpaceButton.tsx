@@ -27,7 +27,6 @@ export default function BackSpaceButton() {
           boxShadow: 0,
         },
         ".MuiButton-endIcon": {
-          //   display: "inherit",
           margin: "auto",
         },
       }}

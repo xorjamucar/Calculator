@@ -1,6 +1,7 @@
 import React from "react";
 import { Operand } from "../functions";
 import Button from "@mui/material/Button";
+import { CalculatorButton } from "../Styles";
 interface OperationButtonProps {
   operand: Operand;
   handleOperandChange: (o: Operand) => void;
@@ -15,25 +16,16 @@ export default function OperandButton({
     handleOperandChange(operand);
   };
   return (
-    <Button
+    <CalculatorButton
       variant="outlined"
       disableRipple
       fullWidth
       sx={{
         fontSize: 20,
         fontWeight: "1",
-        maxHeight: "100%",
+        boxShadow: 2,
         backgroundColor: "#f5f5f5",
-        boxShadow: 1,
-        color: "black",
-        borderColor: "#bdbdbd",
-        "&:hover": {
-          backgroundColor: "#eeeeee",
-          borderColor: "#bdbdbd",
-        },
         "&:active": {
-          backgroundColor: "#eeeeee",
-          borderColor: "#bdbdbd",
           boxShadow: 0,
         },
       }}
@@ -41,6 +33,6 @@ export default function OperandButton({
       disabled={disabled}
     >
       {operand}
-    </Button>
+    </CalculatorButton>
   );
 }

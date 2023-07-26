@@ -1,6 +1,4 @@
 import React from "react";
-import { Operand } from "../functions";
-import Button from "@mui/material/Button";
 import { CalculatorButton } from "../Styles";
 interface Props {
   operand: string;

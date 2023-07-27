@@ -1,9 +1,9 @@
 import React from "react";
-import { Operand } from "../functions";
-import { CalculatorButton } from "../Styles";
+import { Operand } from "../../functions";
+import { CalculatorButton } from "../../Styles";
 interface OperationButtonProps {
-  operand: Operand;
-  handleOperandChange: (o: Operand) => void;
+  operand: "+" | "-" | "÷" | "×";
+  handleOperandChange: (o: "+" | "-" | "÷" | "×") => void;
   disabled: boolean;
 }
 export default function OperandButton({

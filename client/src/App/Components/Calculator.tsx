@@ -7,162 +7,113 @@ import TextField from "@mui/material/TextField";
 
 import { all, create } from "mathjs";
 
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
-import { Typography } from "@mui/material";
-import { PageBox, CalculatorBox, ButtonRow, HistoryBox } from "../Styles";
-import {
-  Operand,
-  resultFormating,
-  inputLimiter,
-  operandMap,
-} from "../functions";
-import BackSpaceButton from "./BackSpaceButton";
-import ClearButton from "./ClearButton";
-import DecimalButton from "./DecimalButton";
-import EqualButton from "./EqualButton";
-import FakeOperandButton from "./FakeOperandButton";
-import NumberButton from "./NumberButton";
-import OperandButton from "./OperandButton";
+import { CalculatorBox, ButtonRow } from "../Styles";
+import { Operand, State, Action } from "../functions";
+import BackSpaceButton from "./Buttons/BackSpaceButton";
+import ClearButton from "./Buttons/ClearButton";
+import DecimalButton from "./Buttons/DecimalButton";
+import EqualButton from "./Buttons/EqualButton";
+import NumberButton from "./Buttons/NumberButton";
+import OperandButton from "./Buttons/OperandButton";
+import UnderOneButton from "./Buttons/UnderOneButton";
+import ExtraOperationButton from "./Buttons/ExtraOperationButton";
 
 var math = create(all, { number: "BigNumber" });
-interface OperationHistory {
-  firstValue: number;
-  secondValue: null | number;
-  r: number | null;
-  op: Operand;
-}
+
 interface Props {
+  state: State;
+  dispatch: React.Dispatch<Action>;
   matches: boolean;
 }
-export default function Calculator({ matches }: Props) {
-  const [userInput, setUserInput] = React.useState("");
-  const [operand, setOperand] = React.useState<Operand>(Operand.Null);
-  const [operation, setOperation] = React.useState("");
-  const [firstInput, setFirstInput] = React.useState(0);
-  const [secondInput, setSecondInput] = React.useState<null | number>(null);
-  const [result, setResult] = React.useState<null | number>(null);
+
+export default function Calculator({ state, dispatch, matches }: Props) {
   // disable operations
   const disableOperations = React.useMemo(
     () => false,
     //isNaN(result) || !isFinite(result)
-    [result]
+    []
   );
-  const representedResult = React.useMemo(
-    () => resultFormating(firstInput),
-    [firstInput]
-  );
+  const input = React.useMemo(() => {
+    if (state.step === 3 || state.step === 4)
+      return (
+        state.operation.secondInput ||
+        state.operation.result ||
+        state.operation.firstInput ||
+        "0"
+      );
+    return state.operation.firstInput || state.operation.result || "0";
+  }, [state.step, state.operation.secondInput, state.operation.firstInput]);
 
+  const operation = React.useMemo(() => {
+    switch (state.step) {
+      case 0:
+      case 1:
+        return state.operation.firstFunction;
+      case 2:
+        return (
+          (state.operation.firstFunction || state.operation.firstInput) +
+          state.operation.operand
+        );
+      case 3:
+        return (
+          (state.operation.firstFunction || state.operation.firstInput) +
+          state.operation.operand
+        );
+      case 4:
+        return (
+          (state.operation.firstFunction || state.operation.firstInput) +
+          state.operation.operand +
+          state.operation.secondFunction
+        );
+      case 5:
+        return (
+          (state.operation.firstFunction || state.operation.firstInput) +
+          state.operation.operand +
+          (state.operation.secondFunction || state.operation.secondInput) +
+          state.operation.eq
+        );
+      default:
+        return "";
+    }
+  }, [state.operation, state.step]);
   // clear handler
   const handleClear = React.useCallback((newInput: string) => {
-    setUserInput(newInput);
-    setFirstInput(0);
-    setOperand(Operand.Null);
-    setOperation("");
-    setSecondInput(null);
-    setResult(null);
+    dispatch({ type: "c" });
   }, []);
 
-  // changeInput
-  // handleFirst input
-  const handleFirstInput = React.useCallback(
-    (n: string, input: string, o: Operand, res: number | null) => {
-      const { newInput, newNumber } = inputLimiter(input, n);
-      setUserInput(newInput);
-      setFirstInput(newNumber);
-      if (o !== Operand.Null) {
-        setOperation("");
-      }
-    },
-    []
-  );
-
-  const handleSecondInput = React.useCallback((n: string, input: string) => {
-    const { newInput, newNumber } = inputLimiter(input, n);
-    setUserInput(newInput);
-    setSecondInput(newNumber);
-  }, []);
-
-  // input change handler
   const handleInputChange = React.useCallback(
-    (n: string) => {
-      operand !== Operand.Null && result === null
-        ? handleSecondInput(n, userInput)
-        : handleFirstInput(n, userInput, operand, result);
-    },
-    [userInput, operand, result]
-  );
-
-  // handleDecimal
-  const handleNewInputIsDecimal = React.useCallback(() => {
-    !userInput.includes(".") && setUserInput((userInput || "0") + ".");
-  }, [userInput]);
-
-  // result handler
-  const firstEqualClick = React.useCallback(
-    (o: Operand, first: number, second: number | null) => {
-      const mathOperand = operandMap.get(o) || "";
-      let calculation = first.toString();
-      let newOperation = `${resultFormating(first)} =`;
-      // let newResult = first
-      if (second !== null) {
-        calculation += mathOperand + second;
-        newOperation = `${resultFormating(first)} ${o} ${resultFormating(
-          second
-        )} =`;
-      }
-      const newResult: number = math.evaluate(calculation);
-      second !== null && setResult(newResult);
-
-      setOperation(newOperation);
-      setUserInput("");
-      setFirstInput(newResult);
+    (n: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9") => {
+      dispatch({ type: "change_input", newInput: n });
     },
     []
   );
 
-  const handleResult = React.useCallback(() => {
-    firstEqualClick(operand, firstInput, secondInput);
-  }, [operand, firstInput, secondInput]);
+  const handleDecimal = React.useCallback(() => {
+    dispatch({ type: "decimal" });
+  }, []);
 
-  // press operand first time
+  const handleResult = React.useCallback(() => {}, []);
 
-  const handleFirstOperandPress = React.useCallback(
-    (input: string, o: Operand) => {
-      setOperand(o);
-      setUserInput("");
-      setOperation(`${resultFormating(math.evaluate(input))} ${o}`);
-      setSecondInput(math.evaluate(input));
-      setResult(null);
-    },
-    []
-  );
+  const handleOperandChange = React.useCallback((o: "+" | "-" | "÷" | "×") => {
+    dispatch({ type: "change_operand", operand: o });
+  }, []);
+  //CE
+  const handleCE = React.useCallback(() => {}, []);
 
-  //result by operand
-  const handleResultByOperand = React.useCallback(
-    (o: Operand, first: number, second: number, currentOperand: Operand) => {
-      const mathOperand = operandMap.get(currentOperand) || "";
-      let calculation = first + mathOperand + second;
-      const newResult: number = math.evaluate(calculation);
-      let newOperation = `${resultFormating(newResult)} ${o}`;
-      setFirstInput(newResult);
-      setSecondInput(newResult);
-      setOperand(o);
-      setOperation(newOperation);
-      setUserInput("");
-    },
-    []
-  );
-  // operand change Handler
-  const handleOperandChange = React.useCallback(
-    (o: Operand) => {
-      userInput && secondInput !== null && operation
-        ? handleResultByOperand(o, firstInput, secondInput, operand)
-        : handleFirstOperandPress(userInput || firstInput.toString(), o);
-    },
-    [userInput, firstInput, secondInput, operand]
-  );
+  // backspace
+  const handleBackSpace = React.useCallback(() => {}, []);
 
+  const handlePercent = React.useCallback(() => {}, []);
+
+  const handleUnderOne = React.useCallback(() => {}, []);
+
+  const handlePow = React.useCallback(() => {
+    dispatch({ type: "pow" });
+  }, []);
+
+  const handleRoot = React.useCallback(() => {}, []);
+
+  const handleSign = React.useCallback(() => {}, []);
   return (
     <CalculatorBox matches={matches}>
       <ButtonRow>
@@ -178,7 +129,7 @@ export default function Calculator({ matches }: Props) {
       <ButtonRow>
         <TextField
           fullWidth
-          value={userInput || representedResult}
+          value={input}
           InputProps={{
             readOnly: true,
           }}
@@ -187,15 +138,15 @@ export default function Calculator({ matches }: Props) {
       </ButtonRow>
 
       <ButtonRow>
-        <FakeOperandButton operand="%" />
-        <FakeOperandButton operand="CE" />
+        <ExtraOperationButton handleClick={handlePercent} symbol="%" />
+        <ExtraOperationButton handleClick={handleCE} symbol="CE" />
         <ClearButton handleClear={handleClear} />
-        <BackSpaceButton />
+        <BackSpaceButton handleBackSpace={handleBackSpace} />
       </ButtonRow>
       <ButtonRow>
-        <FakeOperandButton operand="¹/x" />
-        <FakeOperandButton operand="x²" />
-        <FakeOperandButton operand="²√" />
+        <UnderOneButton handleClick={handleUnderOne} />
+        <ExtraOperationButton handleClick={handlePow} symbol="x²" />
+        <ExtraOperationButton handleClick={handleRoot} symbol="²√" />
         <OperandButton
           operand={Operand.Div}
           handleOperandChange={handleOperandChange}
@@ -235,18 +186,16 @@ export default function Calculator({ matches }: Props) {
         />
       </ButtonRow>
       <ButtonRow>
-        <FakeOperandButton operand="+/-" />
+        <ExtraOperationButton handleClick={handleSign} symbol="+/-" />
+
         <NumberButton num="0" handleInputChange={handleInputChange} />
 
-        <DecimalButton
-          userInput={userInput}
-          handleNewInputIsDecimal={handleNewInputIsDecimal}
-        />
+        <DecimalButton userInput={""} handleNewInputIsDecimal={handleDecimal} />
 
         <EqualButton
           handleResult={handleResult}
           handleClear={handleClear}
-          userInput={userInput}
+          userInput={""}
         />
       </ButtonRow>
     </CalculatorBox>

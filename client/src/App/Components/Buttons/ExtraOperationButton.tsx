@@ -1,10 +1,11 @@
 import React from "react";
-import { CalculatorButton } from "../Styles";
+import { CalculatorButton } from "../../Styles";
 
-interface ClearButtonProps {
-  handleClear: (newInput: string) => void;
+interface Props {
+  handleClick: () => void;
+  symbol: string;
 }
-export default function ClearButton({ handleClear }: ClearButtonProps) {
+export default function ExtraOperationButton({ handleClick, symbol }: Props) {
   return (
     <CalculatorButton
       variant="outlined"
@@ -19,9 +20,9 @@ export default function ClearButton({ handleClear }: ClearButtonProps) {
           boxShadow: 0,
         },
       }}
-      onClick={() => handleClear("0")}
+      onClick={handleClick}
     >
-      C
+      {symbol}
     </CalculatorButton>
   );
 }

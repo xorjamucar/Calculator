@@ -1,4 +1,4 @@
-import { all, create, exp, number } from "mathjs";
+import { all, create } from "mathjs";
 
 export enum Operand {
   Sum = "+",
@@ -15,37 +15,6 @@ export var operandMap = new Map([
   [Operand.Mult, "*"],
 ]);
 
-// input limiting functions
-export function integerLengthLimiter(currentNumber: number, newNumber: number) {
-  if (currentNumber >= 10 ** 16) return currentNumber;
-  return currentNumber * 10 + newNumber;
-}
-
-export function decimalLengthLimiter(
-  integerPart: string,
-  decimalPart: string,
-  newNumber: string
-) {
-  const length =
-    16 - integerPart.length * Number(integerPart !== "0") - decimalPart.length;
-  if (length === 0) return decimalPart;
-  return decimalPart + newNumber;
-}
-
-export function inputLimiter(input: string, n: string) {
-  let numberSplit = input.split(".");
-  const integerPart = numberSplit.shift() || "";
-  let newNumber = Number(integerPart);
-  numberSplit.length === 0 &&
-    (newNumber = integerLengthLimiter(newNumber, Number(n)));
-  let decimalPart = "";
-  if (numberSplit.length === 1)
-    decimalPart = "." + decimalLengthLimiter(integerPart, numberSplit[0], n);
-  const newInput = newNumber + decimalPart;
-  newNumber = math.evaluate(`${newNumber}${decimalPart}`);
-  return { newInput, newNumber };
-}
-
 // formating functions
 export function addCommas(x: number) {
   return x.toLocaleString("en-US", {
@@ -53,35 +22,278 @@ export function addCommas(x: number) {
   });
 }
 
-export function formatDecimal(result: string) {
-  let reversedString = result.split("").reverse();
-  for (let index = 0; index < reversedString.length; index++) {
-    const element = reversedString[index];
-    if (element !== "0") break;
-    reversedString.shift();
-  }
-  return reversedString.reverse().join("");
+export function format(x: math.MathType) {
+  return math.format(x, {
+    lowerExp: -16,
+    upperExp: 16,
+    precision: 16,
+  });
 }
-export function formatExponential(result: string) {
-  const expoSplit = result.split("e");
-  const expoNumber = Number(expoSplit[1]);
-  const numberSplit = expoSplit[0].split(".");
-  let integerPart = numberSplit.shift() || "";
-  let decimalPart = numberSplit[0].substring(0, 15);
-  const numberIsInt = Number(expoNumber >= 0);
-  const numberIsDec = Number(expoNumber < 0);
-  const integerPartIsZero = Number(integerPart === "0");
-  const belongsToInteger = decimalPart.substring(0, expoNumber * numberIsInt);
-  integerPart += belongsToInteger;
-  const belongsToDecimal = new Array(
-    math.abs(expoNumber) * numberIsDec + 1
-  ).join("0");
-  decimalPart += belongsToDecimal;
-  console.log(decimalPart);
-}
-
 export function resultFormating(result: number) {
   // formatExponential(result.toExponential(15));
   // return result.toExponential(15);
   return parseFloat(result.toFixed(16));
+}
+
+interface Operation {
+  firstFunction: string;
+  secondFunction: string;
+  result: string;
+  eq: "=" | "";
+  operand: "" | "+" | "-" | "÷" | "×";
+}
+
+interface RunningOperation extends Operation {
+  firstInput: string;
+  secondInput: string;
+  // show: boolean;
+}
+
+export interface State {
+  firstValue: math.BigNumber;
+  secondValue: math.BigNumber | null;
+  step: 0 | 1 | 2 | 3 | 4 | 5;
+  operation: RunningOperation;
+  history: Operation[];
+}
+
+export interface Action {
+  type: string;
+  newInput?: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+  operand?: "" | "+" | "-" | "÷" | "×";
+}
+
+function operate(
+  firstValue: math.BigNumber,
+  secondValue: math.BigNumber | null,
+  operand: "" | "+" | "-" | "÷" | "×"
+): math.BigNumber {
+  const second = secondValue === null ? firstValue : secondValue;
+  switch (operand) {
+    case "+":
+      return math.add(firstValue, second);
+    case "-":
+      return math.subtract(firstValue, second);
+    case "÷":
+      return math.bignumber(math.format(math.divide(firstValue, second)));
+    case "×":
+      return math.bignumber(math.format(math.multiply(firstValue, second)));
+    default:
+      return second;
+  }
+}
+
+function handleChangeOperand(
+  state: State,
+  operand: "" | "+" | "-" | "÷" | "×"
+): State {
+  switch (state.step) {
+    case 0:
+      return {
+        ...state,
+        step: 2,
+        operation: {
+          ...state.operation,
+          operand: operand,
+          firstFunction: "",
+        },
+      };
+    case 1:
+      return {
+        ...state,
+        step: 2,
+        operation: {
+          ...state.operation,
+          operand: operand,
+          firstInput: format(state.firstValue),
+        },
+      };
+    case 2:
+      return {
+        ...state,
+        operation: { ...state.operation, operand: operand },
+      };
+    case 3:
+    case 4: {
+      const result: math.MathType = operate(
+        state.firstValue,
+        state.secondValue,
+        state.operation.operand
+      );
+      const resultString = format(result);
+      console.log(resultString);
+      return {
+        ...state,
+        firstValue: result,
+        secondValue: result,
+        step: 2,
+        operation: {
+          ...state.operation,
+          result: resultString,
+          firstInput: resultString,
+          secondInput: "",
+          firstFunction: "",
+          secondFunction: "",
+        },
+      };
+    }
+  }
+  return state;
+}
+function handleAddDecimal(state: State): State {
+  switch (state.step) {
+    case 0:
+    case 1: {
+      let num = state.operation.firstInput || "0";
+      !num.includes(".") && (num += ".");
+      return { ...state, operation: { ...state.operation, firstInput: num } };
+    }
+    case 2:
+    case 3: {
+      let num = state.operation.secondInput || "0";
+      !num.includes(".") && (num += ".");
+      return { ...state, operation: { ...state.operation, secondInput: num } };
+    }
+    default:
+      return state;
+  }
+}
+function handleChangeInput(
+  state: State,
+  newInput?: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+): State {
+  switch (state.step) {
+    case 0:
+    case 1: {
+      const isNegative = math.number(state.firstValue.s === -1);
+      const integerIsZero = math.number(state.firstValue.d[0] === 0);
+      const hasDecimal = math.number(state.operation.firstInput.includes("."));
+      const len =
+        state.operation.firstInput.length -
+        isNegative -
+        hasDecimal -
+        integerIsZero * hasDecimal;
+      const s =
+        len < 16
+          ? state.operation.firstInput + newInput
+          : state.operation.firstInput;
+      const n = math.bignumber(s);
+      return {
+        ...state,
+        step: 0,
+        firstValue: n,
+        operation: { ...state.operation, firstInput: s },
+      };
+    }
+    case 2: {
+      const s = newInput || "0";
+      const n = math.bignumber(s);
+      return {
+        ...state,
+        secondValue: n,
+        step: 3,
+        operation: { ...state.operation, secondInput: s },
+      };
+    }
+    case 3: {
+      const isNegative = math.number(state.secondValue?.s === -1);
+      const integerIsZero = math.number(state.secondValue?.d[0] === 0);
+      const hasDecimal = math.number(state.operation.secondInput.includes("."));
+      const len =
+        state.operation.secondInput.length -
+        isNegative -
+        hasDecimal -
+        integerIsZero * hasDecimal;
+      const s =
+        len < 16
+          ? state.operation.secondInput + newInput
+          : state.operation.secondInput;
+      const n = math.bignumber(s);
+
+      return {
+        ...state,
+        secondValue: n,
+        operation: { ...state.operation, secondInput: s },
+      };
+    }
+  }
+  return state;
+}
+
+function handleClear(
+  state: State,
+  newInput?: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+): State {
+  return {
+    ...state,
+    firstValue: math.bignumber(newInput || "0"),
+    secondValue: null,
+    step: 0,
+    operation: {
+      firstInput: newInput || "",
+      secondInput: "",
+      firstFunction: "",
+      secondFunction: "",
+      result: "",
+      eq: "",
+      operand: "",
+    },
+  };
+}
+function pow(state: State): State {
+  switch (state.step) {
+    case 0:
+    case 1: {
+      const result = format(math.pow(state.firstValue, 2));
+      return {
+        ...state,
+        operation: {
+          ...state.operation,
+          firstFunction: state.operation.firstFunction
+            ? `sqr(${state.operation.firstFunction})`
+            : `sqr(${format(state.firstValue)})`,
+          firstInput: "",
+          result: result,
+        },
+        step: 1,
+        firstValue: math.bignumber(result),
+      };
+    }
+    case 2:
+    case 3: {
+      const value =
+        state.secondValue === null ? state.firstValue : state.secondValue;
+      const result = format(math.pow(value, 2));
+      return {
+        ...state,
+        operation: {
+          ...state.operation,
+          secondFunction: state.operation.secondFunction
+            ? `sqr(${state.operation.secondFunction})`
+            : `sqr(${format(value)})`,
+          secondInput: "",
+          result: result,
+        },
+        step: 4,
+        secondValue: math.bignumber(result),
+      };
+    }
+  }
+  return state;
+}
+export function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "change_input":
+      return handleChangeInput(state, action.newInput);
+    case "change_operand":
+      return handleChangeOperand(state, action.operand || "");
+    case "c":
+      return handleClear(state, action.newInput);
+    case "decimal":
+      return handleAddDecimal(state);
+    case "pow":
+      return pow(state);
+    default:
+      return state;
+  }
 }

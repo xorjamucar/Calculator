@@ -1,12 +1,16 @@
 import React from "react";
 import Button from "@mui/material/Button";
 import BackspaceIcon from "@mui/icons-material/Backspace";
-export default function BackSpaceButton() {
+interface Props {
+  handleBackSpace: () => void;
+}
+export default function BackSpaceButton({ handleBackSpace }: Props) {
   return (
     <Button
       variant="outlined"
       disableRipple
       fullWidth
+      onClick={handleBackSpace}
       endIcon={<BackspaceIcon sx={{ color: "grey" }} />}
       sx={{
         fontSize: 20,

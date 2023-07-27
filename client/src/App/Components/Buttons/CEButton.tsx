@@ -1,9 +1,10 @@
 import React from "react";
-import { CalculatorButton } from "../Styles";
+import { CalculatorButton } from "../../Styles";
+
 interface Props {
-  operand: string;
+  handleCE: () => void;
 }
-export default function FakeOperandButton({ operand }: Props) {
+export default function CEButton({ handleCE }: Props) {
   return (
     <CalculatorButton
       variant="outlined"
@@ -18,8 +19,9 @@ export default function FakeOperandButton({ operand }: Props) {
           boxShadow: 0,
         },
       }}
+      onClick={handleCE}
     >
-      {operand}
+      CE
     </CalculatorButton>
   );
 }

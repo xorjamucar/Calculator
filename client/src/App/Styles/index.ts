@@ -30,17 +30,17 @@ export const HistoryBox = styled(Box)<BoxProps>(({ theme }) => ({
 interface CalculatorBoxProps extends BoxProps {
   matches: boolean;
 }
-export const CalculatorBox = styled(Box)<CalculatorBoxProps>(
-  ({ matches, theme }) => ({
-    display: "flex",
-    flexDirection: "column",
-    minHeight: "100%",
-    width: matches ? "65%" : "100%",
-    justifyContent: "space-between",
-    gap: 0.5,
-    margin: 3,
-  })
-);
+export const CalculatorBox = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "matches",
+})<CalculatorBoxProps>(({ matches, theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  minHeight: "100%",
+  width: matches ? "65%" : "100%",
+  justifyContent: "space-between",
+  gap: 0.5,
+  margin: 3,
+}));
 
 interface CalculatorButtonProps extends ButtonProps {
   myColor: string;

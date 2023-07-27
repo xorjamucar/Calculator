@@ -1,14 +1,10 @@
 import React from "react";
-import { CalculatorButton } from "../Styles";
+import { CalculatorButton } from "../../Styles";
 
-interface DecimalButtonProps {
-  userInput: string;
-  handleNewInputIsDecimal: () => void;
+interface Props {
+  handlePercent: () => void;
 }
-export default function DecimalButton({
-  userInput,
-  handleNewInputIsDecimal,
-}: DecimalButtonProps) {
+export default function PercentButton({ handlePercent }: Props) {
   return (
     <CalculatorButton
       variant="outlined"
@@ -23,9 +19,9 @@ export default function DecimalButton({
           boxShadow: 0,
         },
       }}
-      onClick={handleNewInputIsDecimal}
+      onClick={handlePercent}
     >
-      .
+      %
     </CalculatorButton>
   );
 }

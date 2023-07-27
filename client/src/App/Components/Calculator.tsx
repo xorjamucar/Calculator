@@ -33,6 +33,7 @@ export default function Calculator({ state, dispatch, matches }: Props) {
     //isNaN(result) || !isFinite(result)
     []
   );
+  console.log(math.round(math.bignumber(0.01)));
   const input = React.useMemo(() => {
     if (state.step === 3 || state.step === 4)
       return (
@@ -41,8 +42,14 @@ export default function Calculator({ state, dispatch, matches }: Props) {
         state.operation.firstInput ||
         "0"
       );
+    else if (state.step === 5) return state.operation.result;
     return state.operation.firstInput || state.operation.result || "0";
-  }, [state.step, state.operation.secondInput, state.operation.firstInput]);
+  }, [
+    state.step,
+    state.operation.secondInput,
+    state.operation.firstInput,
+    state.operation.result,
+  ]);
 
   const operation = React.useMemo(() => {
     switch (state.step) {
@@ -92,7 +99,9 @@ export default function Calculator({ state, dispatch, matches }: Props) {
     dispatch({ type: "decimal" });
   }, []);
 
-  const handleResult = React.useCallback(() => {}, []);
+  const handleResult = React.useCallback(() => {
+    dispatch({ type: "result" });
+  }, []);
 
   const handleOperandChange = React.useCallback((o: "+" | "-" | "÷" | "×") => {
     dispatch({ type: "change_operand", operand: o });

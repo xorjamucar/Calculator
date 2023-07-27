@@ -96,6 +96,7 @@ function handleChangeOperand(
           ...state.operation,
           operand: operand,
           firstFunction: "",
+          firstInput: format(state.firstValue),
         },
       };
     case 1:
@@ -130,6 +131,7 @@ function handleChangeOperand(
         operation: {
           ...state.operation,
           result: resultString,
+          operand: operand,
           firstInput: resultString,
           secondInput: "",
           firstFunction: "",
@@ -166,17 +168,27 @@ function handleChangeInput(
     case 0:
     case 1: {
       const isNegative = math.number(state.firstValue.s === -1);
-      const integerIsZero = math.number(state.firstValue.d[0] === 0);
+      const integerIsZero = math.number(
+        math.isZero(math.round(state.firstValue))
+      );
       const hasDecimal = math.number(state.operation.firstInput.includes("."));
+      const isZero =
+        math.number(
+          math.isZero(state.firstValue) &&
+            math.isZero(math.number(newInput)) &&
+            !hasDecimal
+        ) * 16;
       const len =
         state.operation.firstInput.length -
         isNegative -
         hasDecimal -
-        integerIsZero * hasDecimal;
+        integerIsZero * hasDecimal +
+        isZero;
       const s =
         len < 16
           ? state.operation.firstInput + newInput
           : state.operation.firstInput;
+      console.log(s);
       const n = math.bignumber(s);
       return {
         ...state,
@@ -216,6 +228,19 @@ function handleChangeInput(
         operation: { ...state.operation, secondInput: s },
       };
     }
+    case 4:
+    case 5:
+      return {
+        ...state,
+        step: 0,
+        firstValue: math.bignumber(newInput || "0"),
+        operation: {
+          ...state.operation,
+          firstFunction: "",
+          secondFunction: state.operation.secondInput,
+          firstInput: newInput || "",
+        },
+      };
   }
   return state;
 }
@@ -281,6 +306,26 @@ function pow(state: State): State {
   }
   return state;
 }
+function handleResult(state: State): State {
+  const result = operate(
+    state.firstValue,
+    state.secondValue,
+    state.operation.operand
+  );
+
+  return {
+    ...state,
+    operation: {
+      ...state.operation,
+      result: format(result),
+      eq: "=",
+      firstInput: format(state.firstValue),
+    },
+    firstValue: result,
+
+    step: 5,
+  };
+}
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "change_input":
@@ -293,6 +338,8 @@ export function reducer(state: State, action: Action): State {
       return handleAddDecimal(state);
     case "pow":
       return pow(state);
+    case "result":
+      return handleResult(state);
     default:
       return state;
   }

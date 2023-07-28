@@ -1,5 +1,4 @@
 import React from "react";
-import { Operand } from "../../functions";
 import { CalculatorButton } from "../../Styles";
 interface OperationButtonProps {
   operand: "+" | "-" | "÷" | "×";

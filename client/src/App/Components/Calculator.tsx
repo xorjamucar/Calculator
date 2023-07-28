@@ -8,7 +8,7 @@ import TextField from "@mui/material/TextField";
 import { all, create } from "mathjs";
 
 import { CalculatorBox, ButtonRow } from "../Styles";
-import { Operand, State, Action } from "../functions";
+import { State, Action } from "../functions/reducer";
 import BackSpaceButton from "./Buttons/BackSpaceButton";
 import ClearButton from "./Buttons/ClearButton";
 import DecimalButton from "./Buttons/DecimalButton";
@@ -33,23 +33,9 @@ export default function Calculator({ state, dispatch, matches }: Props) {
     //isNaN(result) || !isFinite(result)
     []
   );
-  console.log(math.round(math.bignumber(0.01)));
   const input = React.useMemo(() => {
-    if (state.step === 3 || state.step === 4)
-      return (
-        state.operation.secondInput ||
-        state.operation.result ||
-        state.operation.firstInput ||
-        "0"
-      );
-    else if (state.step === 5) return state.operation.result;
-    return state.operation.firstInput || state.operation.result || "0";
-  }, [
-    state.step,
-    state.operation.secondInput,
-    state.operation.firstInput,
-    state.operation.result,
-  ]);
+    return state.input || "0";
+  }, [state.input]);
 
   const operation = React.useMemo(() => {
     switch (state.step) {
@@ -57,30 +43,22 @@ export default function Calculator({ state, dispatch, matches }: Props) {
       case 1:
         return state.operation.firstFunction;
       case 2:
-        return (
-          (state.operation.firstFunction || state.operation.firstInput) +
-          state.operation.operand
-        );
       case 3:
-        return (
-          (state.operation.firstFunction || state.operation.firstInput) +
-          state.operation.operand
-        );
+        return state.operation.firstFunction + state.operation.operand;
       case 4:
         return (
-          (state.operation.firstFunction || state.operation.firstInput) +
+          state.operation.firstFunction +
           state.operation.operand +
           state.operation.secondFunction
         );
+
       case 5:
         return (
-          (state.operation.firstFunction || state.operation.firstInput) +
+          state.operation.firstFunction +
           state.operation.operand +
-          (state.operation.secondFunction || state.operation.secondInput) +
+          state.operation.secondFunction +
           state.operation.eq
         );
-      default:
-        return "";
     }
   }, [state.operation, state.step]);
   // clear handler
@@ -112,17 +90,25 @@ export default function Calculator({ state, dispatch, matches }: Props) {
   // backspace
   const handleBackSpace = React.useCallback(() => {}, []);
 
-  const handlePercent = React.useCallback(() => {}, []);
-
-  const handleUnderOne = React.useCallback(() => {}, []);
-
-  const handlePow = React.useCallback(() => {
-    dispatch({ type: "pow" });
+  const handlePercent = React.useCallback(() => {
+    dispatch({ type: "addFunction", func: "percent" });
   }, []);
 
-  const handleRoot = React.useCallback(() => {}, []);
+  const handleUnderOne = React.useCallback(() => {
+    dispatch({ type: "addFunction", func: "1/x" });
+  }, []);
 
-  const handleSign = React.useCallback(() => {}, []);
+  const handlePow = React.useCallback(() => {
+    dispatch({ type: "addFunction", func: "sqr" });
+  }, []);
+
+  const handleRoot = React.useCallback(() => {
+    dispatch({ type: "addFunction", func: "sqrt" });
+  }, []);
+
+  const handleSign = React.useCallback(() => {
+    dispatch({ type: "addFunction", func: "sign" });
+  }, []);
   return (
     <CalculatorBox matches={matches}>
       <ButtonRow>
@@ -157,7 +143,7 @@ export default function Calculator({ state, dispatch, matches }: Props) {
         <ExtraOperationButton handleClick={handlePow} symbol="x²" />
         <ExtraOperationButton handleClick={handleRoot} symbol="²√" />
         <OperandButton
-          operand={Operand.Div}
+          operand={"÷"}
           handleOperandChange={handleOperandChange}
           disabled={disableOperations}
         />
@@ -168,7 +154,7 @@ export default function Calculator({ state, dispatch, matches }: Props) {
         <NumberButton num="9" handleInputChange={handleInputChange} />
 
         <OperandButton
-          operand={Operand.Mult}
+          operand={"×"}
           handleOperandChange={handleOperandChange}
           disabled={disableOperations}
         />
@@ -178,7 +164,7 @@ export default function Calculator({ state, dispatch, matches }: Props) {
         <NumberButton num="5" handleInputChange={handleInputChange} />
         <NumberButton num="6" handleInputChange={handleInputChange} />
         <OperandButton
-          operand={Operand.Sub}
+          operand={"-"}
           handleOperandChange={handleOperandChange}
           disabled={disableOperations}
         />
@@ -189,7 +175,7 @@ export default function Calculator({ state, dispatch, matches }: Props) {
         <NumberButton num="3" handleInputChange={handleInputChange} />
 
         <OperandButton
-          operand={Operand.Sum}
+          operand={"+"}
           handleOperandChange={handleOperandChange}
           disabled={disableOperations}
         />

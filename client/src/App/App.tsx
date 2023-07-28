@@ -3,7 +3,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { reducer } from "./functions";
+import { reducer } from "./functions/reducer";
 import { all, create } from "mathjs";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -16,10 +16,9 @@ export default function App() {
   const [state, dispatch] = React.useReducer(reducer, {
     firstValue: math.bignumber(0),
     secondValue: null,
-    step: 0,
+    input: "",
+    step: 5,
     operation: {
-      firstInput: "",
-      secondInput: "",
       firstFunction: "",
       secondFunction: "",
       result: "",

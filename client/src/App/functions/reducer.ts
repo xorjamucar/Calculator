@@ -275,19 +275,6 @@ function handleClear(
     },
   };
 }
-function pow(state: State): State {
-  switch (state.step) {
-    case 0:
-    case 1: {
-      const result = format(math.pow(state.firstValue, 2));
-      return state;
-    }
-    case 2:
-    case 3:
-      return state;
-  }
-  return state;
-}
 
 function useFunction(
   num: math.BigNumber,
@@ -482,6 +469,10 @@ function handleResult(state: State): State {
         firstValue: result,
       };
   }
+}
+
+function backsPace(state: State): State {
+  return state;
 }
 export function reducer(state: State, action: Action): State {
   switch (action.type) {

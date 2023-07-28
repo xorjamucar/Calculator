@@ -17,6 +17,8 @@ import NumberButton from "./Buttons/NumberButton";
 import OperandButton from "./Buttons/OperandButton";
 import UnderOneButton from "./Buttons/UnderOneButton";
 import ExtraOperationButton from "./Buttons/ExtraOperationButton";
+import ResultText from "./ResultText";
+import FormulaText from "./FormulaText";
 
 var math = create(all, { number: "BigNumber" });
 
@@ -112,24 +114,10 @@ export default function Calculator({ state, dispatch, matches }: Props) {
   return (
     <CalculatorBox matches={matches}>
       <ButtonRow>
-        <TextField
-          value={operation}
-          fullWidth
-          InputProps={{
-            readOnly: true,
-          }}
-          inputProps={{ style: { textAlign: "end" } }}
-        />
+        <FormulaText input={operation} />
       </ButtonRow>
       <ButtonRow>
-        <TextField
-          fullWidth
-          value={input}
-          InputProps={{
-            readOnly: true,
-          }}
-          inputProps={{ style: { textAlign: "end" } }}
-        />
+        <ResultText input={input} />
       </ButtonRow>
 
       <ButtonRow>

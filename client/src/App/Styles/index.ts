@@ -22,7 +22,7 @@ export const HistoryBox = styled(Box)<BoxProps>(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   minHeight: "100%",
-  width: "35%",
+  width: "30%",
   gap: 0.5,
   margin: 3,
 }));
@@ -36,16 +36,11 @@ export const CalculatorBox = styled(Box, {
   display: "flex",
   flexDirection: "column",
   minHeight: "100%",
-  width: matches ? "65%" : "100%",
+  width: matches ? "70%" : "100%",
   justifyContent: "space-between",
   gap: 0.5,
   margin: 3,
 }));
-
-interface CalculatorButtonProps extends ButtonProps {
-  myColor: string;
-  myFontWeight: number;
-}
 
 export const CalculatorButton = styled(Button)<ButtonProps>(({ theme }) => ({
   maxHeight: "100%",

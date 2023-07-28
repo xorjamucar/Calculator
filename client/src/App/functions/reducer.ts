@@ -33,7 +33,7 @@ export interface State {
   input: string;
   firstValue: math.BigNumber;
   secondValue: math.BigNumber | null;
-  step: 0 | 1 | 2 | 3 | 4 | 5;
+  step: 0 | 1 | 2 | 3 | 4 | 5 | "error";
   operation: Operation;
   history: Operation[];
 }
@@ -132,6 +132,8 @@ export function handleChangeInput(
         firstValue: math.bignumber(newInput),
         operation: { ...state.operation, firstFunction: "" },
       };
+    default:
+      return state;
   }
 }
 
@@ -221,6 +223,8 @@ function handleChangeOperand(
           firstFunction: format(state.firstValue),
         },
       };
+    default:
+      return state;
   }
 }
 function handleAddDecimal(state: State): State {
@@ -253,6 +257,8 @@ function handleAddDecimal(state: State): State {
         input: "0.",
         operation: { ...state.operation, firstFunction: "" },
       };
+    default:
+      return state;
   }
 }
 
@@ -386,88 +392,115 @@ function hadleAddFunction(
       );
       return {
         ...state,
-        step: 1,
+        step: 4,
         secondValue: result,
         input: format(result),
         operation: { ...state.operation, secondFunction: newInput },
       };
-    case 5:
+    case 5: {
+      const { result, newInput } = useFunction(
+        state.firstValue,
+        format(state.firstValue),
+        func
+      );
+      return {
+        ...state,
+        step: 1,
+        firstValue: result,
+        input: format(result),
+        operation: {
+          ...state.operation,
+          firstFunction: newInput,
+          secondFunction: format(
+            state.secondValue ? state.secondValue : state.firstValue
+          ),
+        },
+      };
+    }
+    default:
       return state;
   }
 }
 function handleResult(state: State): State {
-  const result = operate(
-    state.firstValue,
-    state.secondValue,
-    state.operation.operand
-  );
-  const resultString = format(result);
-  switch (state.step) {
-    case 1:
-      return {
-        ...state,
-        step: 5,
-        operation: {
-          ...state.operation,
-          eq: "=",
-        },
-        input: resultString,
-        firstValue: result,
-      };
-    case 2:
-      return {
-        ...state,
-        step: 5,
-        operation: {
-          ...state.operation,
-          eq: "=",
-          secondFunction: format(
-            state.secondValue === null ? state.firstValue : state.secondValue
-          ),
-        },
-        input: resultString,
-        firstValue: result,
-      };
-    case 3:
-      return {
-        ...state,
-        step: 5,
-        operation: {
-          ...state.operation,
-          eq: "=",
-          secondFunction: format(
-            state.secondValue === null ? state.firstValue : state.secondValue
-          ),
-        },
-        input: resultString,
-        firstValue: result,
-      };
-    case 4:
-      return {
-        ...state,
-        step: 5,
-        operation: {
-          ...state.operation,
-          eq: "=",
-        },
-        input: resultString,
-        firstValue: result,
-      };
-    case 0:
-    case 5:
-      return {
-        ...state,
-        step: 5,
-        operation: {
-          ...state.operation,
-          eq: "=",
-          firstFunction: format(state.firstValue),
-          secondFunction:
-            state.secondValue === null ? "" : format(state.secondValue),
-        },
-        input: resultString,
-        firstValue: result,
-      };
+  try {
+    const result = operate(
+      state.firstValue,
+      state.secondValue,
+      state.operation.operand
+    );
+
+    const resultString = format(result);
+    switch (state.step) {
+      case 1:
+        return {
+          ...state,
+          step: 5,
+          operation: {
+            ...state.operation,
+            eq: "=",
+          },
+          input: resultString,
+          firstValue: result,
+        };
+      case 2:
+        return {
+          ...state,
+          step: 5,
+          operation: {
+            ...state.operation,
+            eq: "=",
+            secondFunction: format(
+              state.secondValue === null ? state.firstValue : state.secondValue
+            ),
+          },
+          input: resultString,
+          firstValue: result,
+        };
+      case 3:
+        return {
+          ...state,
+          step: 5,
+          operation: {
+            ...state.operation,
+            eq: "=",
+            secondFunction: format(
+              state.secondValue === null ? state.firstValue : state.secondValue
+            ),
+          },
+          input: resultString,
+          firstValue: result,
+        };
+      case 4:
+        return {
+          ...state,
+          step: 5,
+          operation: {
+            ...state.operation,
+            eq: "=",
+          },
+          input: resultString,
+          firstValue: result,
+        };
+      case 0:
+      case 5:
+        return {
+          ...state,
+          step: 5,
+          operation: {
+            ...state.operation,
+            eq: "=",
+            firstFunction: format(state.firstValue),
+            secondFunction:
+              state.secondValue === null ? "" : format(state.secondValue),
+          },
+          input: resultString,
+          firstValue: result,
+        };
+      default:
+        return state;
+    }
+  } catch (e) {
+    return state;
   }
 }
 

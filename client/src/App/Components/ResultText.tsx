@@ -4,16 +4,12 @@ import React from "react";
 interface Props {
   input: string;
 }
-export function addCommas(x: number) {
-  return x.toLocaleString("en-US", {
-    maximumFractionDigits: 15,
-  });
-}
 
 export default function ResultText({ input }: Props) {
   const text = React.useMemo(() => {
     let inputSplit = input.split(".");
-    inputSplit[0] = addCommas(Number(inputSplit[0]));
+    !input.includes("e") &&
+      (inputSplit[0] = inputSplit[0].replace(/\B(?=(\d{3})+(?!\d))/g, ","));
     return inputSplit.join(".");
   }, [input]);
   const variant = React.useMemo(

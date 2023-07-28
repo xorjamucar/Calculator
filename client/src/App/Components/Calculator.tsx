@@ -53,7 +53,7 @@ export default function Calculator({ state, dispatch, matches }: Props) {
           state.operation.operand +
           state.operation.secondFunction
         );
-
+      case "error":
       case 5:
         return (
           state.operation.firstFunction +

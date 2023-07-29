@@ -22,8 +22,9 @@ export default function EqualButton({
       variant="contained"
       disableRipple
       sx={{
-        fontSize: 20,
+        fontSize: 30,
         boxShadow: 2,
+
         maxHeight: "100%",
         borderColor: "#bdbdbd",
         "&:hover": {

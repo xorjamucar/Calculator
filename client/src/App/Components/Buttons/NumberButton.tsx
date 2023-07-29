@@ -22,8 +22,7 @@ export default function NumberButton({
       fullWidth
       sx={{
         fontSize: 20,
-        fontWeight: "1",
-        boxShadow: 2,
+        boxShadow: 1,
         backgroundColor: "white",
         "&:active": {
           boxShadow: 0,

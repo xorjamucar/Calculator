@@ -1,9 +1,11 @@
 import React from "react";
 import { CalculatorButton } from "../../Styles";
+import { OverridableComponent } from "@mui/material/OverridableComponent";
+import { SvgIconTypeMap } from "@mui/material/SvgIcon/SvgIcon";
 
 interface Props {
   handleClick: () => void;
-  symbol: string;
+  symbol: string | JSX.Element;
 }
 export default function ExtraOperationButton({ handleClick, symbol }: Props) {
   return (
@@ -12,9 +14,10 @@ export default function ExtraOperationButton({ handleClick, symbol }: Props) {
       disableRipple
       fullWidth
       sx={{
-        fontSize: 20,
-        fontWeight: "1",
-        boxShadow: 2,
+        fontSize: 30,
+        color: "#1e88e5",
+        padding: "5px 15px 18px",
+        boxShadow: 1,
         backgroundColor: "#f5f5f5",
         "&:active": {
           boxShadow: 0,

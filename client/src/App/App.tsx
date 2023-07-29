@@ -10,6 +10,7 @@ import { useTheme } from "@mui/material/styles";
 import { Typography } from "@mui/material";
 import { HistoryBox, PageBox } from "./Styles";
 import Calculator from "./Components/Calculator";
+import { RootIcon } from "./Icons";
 var math = create(all, { number: "BigNumber" });
 
 export default function App() {

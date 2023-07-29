@@ -13,7 +13,7 @@ export default function ResultText({ input }: Props) {
     return inputSplit.join(".");
   }, [input]);
   const variant = React.useMemo(
-    (): "h4" | "h5" => (text.length <= 15 ? "h4" : "h5"),
+    (): "h3" | "h4" => (text.length <= 15 ? "h3" : "h4"),
     [text]
   );
 
@@ -25,6 +25,7 @@ export default function ResultText({ input }: Props) {
         display: "flex",
         // alignItems: "center",
         justifyContent: "flex-end",
+        padding: 1,
       }}
     >
       <Typography variant={variant} textAlign={"right"} noWrap>

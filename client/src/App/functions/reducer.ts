@@ -411,9 +411,8 @@ function hadleAddFunction(
         operation: {
           ...state.operation,
           firstFunction: newInput,
-          secondFunction: format(
-            state.secondValue ? state.secondValue : state.firstValue
-          ),
+          secondFunction:
+            state.secondValue === null ? "" : format(state.secondValue),
         },
       };
     }

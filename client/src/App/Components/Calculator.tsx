@@ -3,7 +3,6 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import TextField from "@mui/material/TextField";
 
 import { all, create } from "mathjs";
 
@@ -19,6 +18,7 @@ import UnderOneButton from "./Buttons/UnderOneButton";
 import ExtraOperationButton from "./Buttons/ExtraOperationButton";
 import ResultText from "./ResultText";
 import FormulaText from "./FormulaText";
+import { Negate, RootIcon, SquareIcon } from "../Icons";
 
 var math = create(all, { number: "BigNumber" });
 
@@ -38,7 +38,7 @@ export default function Calculator({ state, dispatch, matches }: Props) {
   const input = React.useMemo(() => {
     return state.input || "0";
   }, [state.input]);
-
+  console.log(state);
   const operation = React.useMemo(() => {
     switch (state.step) {
       case 0:
@@ -128,8 +128,14 @@ export default function Calculator({ state, dispatch, matches }: Props) {
       </ButtonRow>
       <ButtonRow>
         <UnderOneButton handleClick={handleUnderOne} />
-        <ExtraOperationButton handleClick={handlePow} symbol="x²" />
-        <ExtraOperationButton handleClick={handleRoot} symbol="²√" />
+        <ExtraOperationButton
+          handleClick={handlePow}
+          symbol={<SquareIcon color="primary" />}
+        />
+        <ExtraOperationButton
+          handleClick={handleRoot}
+          symbol={<RootIcon color="primary" />}
+        />
         <OperandButton
           operand={"÷"}
           handleOperandChange={handleOperandChange}
@@ -169,7 +175,10 @@ export default function Calculator({ state, dispatch, matches }: Props) {
         />
       </ButtonRow>
       <ButtonRow>
-        <ExtraOperationButton handleClick={handleSign} symbol="+/-" />
+        <ExtraOperationButton
+          handleClick={handleSign}
+          symbol={<Negate color="primary" />}
+        />
 
         <NumberButton num="0" handleInputChange={handleInputChange} />
 

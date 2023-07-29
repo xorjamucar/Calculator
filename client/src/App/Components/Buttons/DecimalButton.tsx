@@ -15,9 +15,9 @@ export default function DecimalButton({
       disableRipple
       fullWidth
       sx={{
-        fontSize: 20,
-        fontWeight: "1",
-        boxShadow: 2,
+        fontSize: 30,
+        color: "#1e88e5",
+        boxShadow: 1,
         backgroundColor: "#f5f5f5",
         "&:active": {
           boxShadow: 0,

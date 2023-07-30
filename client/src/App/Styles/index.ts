@@ -7,7 +7,7 @@ export const ButtonRow = styled(Box)<BoxProps>(({ theme }) => ({
   flexDirection: "row",
   height: "12%",
   width: "100%",
-  gap: 1,
+  gap: 2,
 }));
 
 export const PageBox = styled(Box)<BoxProps>(({ theme }) => ({
@@ -38,21 +38,26 @@ export const CalculatorBox = styled(Box, {
   minHeight: "100%",
   width: matches ? "70%" : "100%",
   justifyContent: "space-between",
-  gap: 0.5,
+  gap: 1,
   margin: 3,
 }));
 
 export const CalculatorButton = styled(Button)<ButtonProps>(({ theme }) => ({
-  maxHeight: "100%",
+  // maxHeight: "100%",
+  // padding: 0,
   color: "black",
-  borderColor: "#bdbdbd",
+  borderColor: "#616161",
+  borderWidth: "2px",
+  borderRadius: "10px",
   "&:hover": {
     backgroundColor: "#eeeeee",
-    borderColor: "#bdbdbd",
+    borderColor: "#616161",
+    borderWidth: "2px",
   },
   "&:active": {
     backgroundColor: "#eeeeee",
     borderColor: "#bdbdbd",
+    color: "#bdbdbd",
     boxShadow: 0,
   },
 }));

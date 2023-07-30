@@ -4,23 +4,23 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
-import { all, create } from "mathjs";
-
 import { CalculatorBox, ButtonRow } from "../Styles";
 import { State, Action } from "../functions/reducer";
-import BackSpaceButton from "./Buttons/BackSpaceButton";
-import ClearButton from "./Buttons/ClearButton";
-import DecimalButton from "./Buttons/DecimalButton";
+
 import EqualButton from "./Buttons/EqualButton";
 import NumberButton from "./Buttons/NumberButton";
 import OperandButton from "./Buttons/OperandButton";
-import UnderOneButton from "./Buttons/UnderOneButton";
-import ExtraOperationButton from "./Buttons/ExtraOperationButton";
+
 import ResultText from "./ResultText";
 import FormulaText from "./FormulaText";
-import { Negate, RootIcon, SquareIcon } from "../Icons";
-
-var math = create(all, { number: "BigNumber" });
+import {
+  BackSpaceIcon,
+  Negate,
+  RootIcon,
+  SquareIcon,
+  UnderOne,
+} from "../Icons";
+import FunctionButtom from "./Buttons/FunctionButton";
 
 interface Props {
   state: State;
@@ -35,10 +35,11 @@ export default function Calculator({ state, dispatch, matches }: Props) {
     //isNaN(result) || !isFinite(result)
     []
   );
+
   const input = React.useMemo(() => {
     return state.input || "0";
   }, [state.input]);
-  console.log(state);
+
   const operation = React.useMemo(() => {
     switch (state.step) {
       case 0:
@@ -53,13 +54,21 @@ export default function Calculator({ state, dispatch, matches }: Props) {
           state.operation.operand +
           state.operation.secondFunction
         );
-      case "error":
+
       case 5:
+        if (state.operation.eq)
+          return (
+            state.operation.firstFunction +
+            state.operation.operand +
+            state.operation.secondFunction +
+            state.operation.eq
+          );
+        else return "";
+      case "error":
         return (
           state.operation.firstFunction +
           state.operation.operand +
-          state.operation.secondFunction +
-          state.operation.eq
+          state.operation.secondFunction
         );
     }
   }, [state.operation, state.step]);
@@ -87,10 +96,14 @@ export default function Calculator({ state, dispatch, matches }: Props) {
     dispatch({ type: "change_operand", operand: o });
   }, []);
   //CE
-  const handleCE = React.useCallback(() => {}, []);
+  const handleCE = React.useCallback(() => {
+    dispatch({ type: "ce" });
+  }, []);
 
   // backspace
-  const handleBackSpace = React.useCallback(() => {}, []);
+  const handleBackSpace = React.useCallback(() => {
+    dispatch({ type: "backspace" });
+  }, []);
 
   const handlePercent = React.useCallback(() => {
     dispatch({ type: "addFunction", func: "percent" });
@@ -121,74 +134,99 @@ export default function Calculator({ state, dispatch, matches }: Props) {
       </ButtonRow>
 
       <ButtonRow>
-        <ExtraOperationButton handleClick={handlePercent} symbol="%" />
-        <ExtraOperationButton handleClick={handleCE} symbol="CE" />
-        <ClearButton handleClear={handleClear} />
-        <BackSpaceButton handleBackSpace={handleBackSpace} />
+        <FunctionButtom
+          handleClick={handlePercent}
+          symbol="%"
+          disabled={disableOperations}
+        />
+        <FunctionButtom handleClick={handleCE} symbol="CE" disabled={false} />
+        <FunctionButtom
+          handleClick={() => handleClear("0")}
+          symbol="C"
+          disabled={false}
+        />
+        <FunctionButtom
+          handleClick={handleBackSpace}
+          symbol={<BackSpaceIcon />}
+          disabled={false}
+          id={"Backspace"}
+        />
       </ButtonRow>
       <ButtonRow>
-        <UnderOneButton handleClick={handleUnderOne} />
-        <ExtraOperationButton
-          handleClick={handlePow}
-          symbol={<SquareIcon color="primary" />}
+        <FunctionButtom
+          handleClick={handleUnderOne}
+          symbol={<UnderOne />}
+          disabled={disableOperations}
         />
-        <ExtraOperationButton
+        <FunctionButtom
+          handleClick={handlePow}
+          symbol={<SquareIcon />}
+          disabled={disableOperations}
+        />
+        <FunctionButtom
           handleClick={handleRoot}
-          symbol={<RootIcon color="primary" />}
+          symbol={<RootIcon />}
+          disabled={disableOperations}
         />
         <OperandButton
           operand={"÷"}
           handleOperandChange={handleOperandChange}
           disabled={disableOperations}
+          id="/"
         />
       </ButtonRow>
       <ButtonRow>
-        <NumberButton num="7" handleInputChange={handleInputChange} />
-        <NumberButton num="8" handleInputChange={handleInputChange} />
-        <NumberButton num="9" handleInputChange={handleInputChange} />
+        <NumberButton num="7" handleInputChange={handleInputChange} id="7" />
+        <NumberButton num="8" handleInputChange={handleInputChange} id="8" />
+        <NumberButton num="9" handleInputChange={handleInputChange} id="9" />
 
         <OperandButton
           operand={"×"}
           handleOperandChange={handleOperandChange}
           disabled={disableOperations}
+          id="x"
         />
       </ButtonRow>
       <ButtonRow>
-        <NumberButton num="4" handleInputChange={handleInputChange} />
-        <NumberButton num="5" handleInputChange={handleInputChange} />
-        <NumberButton num="6" handleInputChange={handleInputChange} />
+        <NumberButton num="4" handleInputChange={handleInputChange} id="4" />
+        <NumberButton num="5" handleInputChange={handleInputChange} id="5" />
+        <NumberButton num="6" handleInputChange={handleInputChange} id="6" />
         <OperandButton
           operand={"-"}
           handleOperandChange={handleOperandChange}
           disabled={disableOperations}
+          id="-"
         />
       </ButtonRow>
       <ButtonRow>
-        <NumberButton num="1" handleInputChange={handleInputChange} />
-        <NumberButton num="2" handleInputChange={handleInputChange} />
-        <NumberButton num="3" handleInputChange={handleInputChange} />
+        <NumberButton num="1" handleInputChange={handleInputChange} id="1" />
+        <NumberButton num="2" handleInputChange={handleInputChange} id="2" />
+        <NumberButton num="3" handleInputChange={handleInputChange} id="3" />
 
         <OperandButton
           operand={"+"}
           handleOperandChange={handleOperandChange}
           disabled={disableOperations}
+          id="t"
         />
       </ButtonRow>
       <ButtonRow>
-        <ExtraOperationButton
+        <FunctionButtom
           handleClick={handleSign}
-          symbol={<Negate color="primary" />}
+          symbol={<Negate />}
+          disabled={disableOperations}
         />
 
-        <NumberButton num="0" handleInputChange={handleInputChange} />
+        <NumberButton num="0" handleInputChange={handleInputChange} id="0" />
 
-        <DecimalButton userInput={""} handleNewInputIsDecimal={handleDecimal} />
-
-        <EqualButton
-          handleResult={handleResult}
-          handleClear={handleClear}
-          userInput={""}
+        <FunctionButtom
+          handleClick={handleDecimal}
+          symbol="."
+          disabled={disableOperations}
+          id="."
         />
+
+        <EqualButton handleResult={handleResult} />
       </ButtonRow>
     </CalculatorBox>
   );

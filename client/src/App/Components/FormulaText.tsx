@@ -14,7 +14,6 @@ export default function FormulaText({ input }: Props) {
         display: "flex",
         alignItems: "end",
         justifyContent: "flex-end",
-        padding: 1,
       }}
     >
       <Typography color="grey" variant={"body1"} textAlign={"right"} noWrap>

@@ -1,4 +1,4 @@
-import { all, create } from "mathjs";
+import { all, bignumber, create } from "mathjs";
 export var math = create(all, { number: "BigNumber" });
 
 // formating functions
@@ -132,6 +132,8 @@ export function handleChangeInput(
         firstValue: math.bignumber(newInput),
         operation: { ...state.operation, firstFunction: "" },
       };
+    case "error":
+      return handleClear(state, newInput);
     default:
       return state;
   }
@@ -143,18 +145,27 @@ function operate(
   operand: "" | "+" | "-" | "÷" | "×"
 ): math.BigNumber {
   const second = secondValue === null ? firstValue : secondValue;
+  let result = second;
   switch (operand) {
     case "+":
-      return math.add(firstValue, second);
+      result = math.add(firstValue, second);
+      break;
     case "-":
-      return math.subtract(firstValue, second);
+      result = math.subtract(firstValue, second);
+      break;
     case "÷":
-      return math.bignumber(math.format(math.divide(firstValue, second)));
+      if (math.isZero(second) && math.isZero(firstValue))
+        throw "Result is undefined";
+      else if (math.isZero(second)) throw "Cannot divide by zero";
+      result = math.bignumber(math.format(math.divide(firstValue, second)));
+      break;
     case "×":
       return math.bignumber(math.format(math.multiply(firstValue, second)));
     default:
       return second;
   }
+  if (math.equal(result, Infinity)) throw "Overflow";
+  return result;
 }
 function handleChangeOperand(
   state: State,
@@ -165,6 +176,7 @@ function handleChangeOperand(
       return {
         ...state,
         step: 2,
+
         secondValue: state.firstValue,
         operation: {
           ...state.operation,
@@ -201,6 +213,16 @@ function handleChangeOperand(
       return {
         ...state,
         step: 2,
+        history: [
+          ...state.history,
+          {
+            firstFunction: state.operation.firstFunction,
+            secondFunction: state.operation.secondFunction,
+            result: format(result),
+            eq: "=",
+            operand: state.operation.operand,
+          },
+        ],
         firstValue: result,
         input: resultString,
         secondValue: null,
@@ -295,11 +317,13 @@ function useFunction(
     }
     case "sqr": {
       const result = math.bignumber(format(math.pow(num, 2)));
+      if (math.equal(result, Infinity)) throw "Overflow";
       const newInput = `sqr(${input})`;
       return { result, newInput };
     }
     case "sqrt": {
       const result = math.sqrt(num);
+      if (math.isComplex(result)) throw "Invalid input";
       const newInput = `sqrt(${input})`;
       return { result, newInput };
     }
@@ -325,102 +349,110 @@ function hadleAddFunction(
   state: State,
   func?: "percent" | "sqr" | "sqrt" | "1/x" | "sign"
 ): State {
-  switch (state.step) {
-    case 0: {
-      const { result, newInput } = useFunction(
-        state.firstValue,
-        state.operation.firstFunction || format(state.firstValue),
-        func
-      );
-      return {
-        ...state,
-        step: 1,
-        input: format(result),
-        firstValue: result,
-        operation: { ...state.operation, firstFunction: newInput },
-      };
+  try {
+    switch (state.step) {
+      case 0: {
+        const { result, newInput } = useFunction(
+          state.firstValue,
+          state.operation.firstFunction || format(state.firstValue),
+          func
+        );
+        return {
+          ...state,
+          step: 1,
+          input: format(result),
+          firstValue: result,
+          operation: { ...state.operation, firstFunction: newInput },
+        };
+      }
+      case 1: {
+        const { result, newInput } = useFunction(
+          state.firstValue,
+          state.operation.firstFunction || format(state.firstValue),
+          func
+        );
+        return {
+          ...state,
+          step: 1,
+          firstValue: result,
+          input: format(result),
+          operation: { ...state.operation, firstFunction: newInput },
+        };
+      }
+      case 2: {
+        const { result, newInput } = useFunction(
+          state.secondValue === null ? state.firstValue : state.secondValue,
+          format(
+            state.secondValue === null ? state.firstValue : state.secondValue
+          ),
+          func
+        );
+        return {
+          ...state,
+          step: 4,
+          secondValue: result,
+          input: format(result),
+          operation: { ...state.operation, secondFunction: newInput },
+        };
+      }
+      case 3: {
+        const { result, newInput } = useFunction(
+          state.secondValue === null ? state.firstValue : state.secondValue,
+          format(
+            state.secondValue === null ? state.firstValue : state.secondValue
+          ),
+          func
+        );
+        return {
+          ...state,
+          step: 4,
+          secondValue: result,
+          input: format(result),
+          operation: { ...state.operation, secondFunction: newInput },
+        };
+      }
+      case 4:
+        const { result, newInput } = useFunction(
+          state.secondValue === null ? state.firstValue : state.secondValue,
+          state.operation.secondFunction,
+          func
+        );
+        return {
+          ...state,
+          step: 4,
+          secondValue: result,
+          input: format(result),
+          operation: { ...state.operation, secondFunction: newInput },
+        };
+      case 5: {
+        const { result, newInput } = useFunction(
+          state.firstValue,
+          format(state.firstValue),
+          func
+        );
+        return {
+          ...state,
+          step: 1,
+          firstValue: result,
+          input: format(result),
+          operation: {
+            ...state.operation,
+            firstFunction: newInput,
+            secondFunction:
+              state.secondValue === null ? "" : format(state.secondValue),
+          },
+        };
+      }
+      default:
+        return state;
     }
-    case 1: {
-      const { result, newInput } = useFunction(
-        state.firstValue,
-        state.operation.firstFunction || format(state.firstValue),
-        func
-      );
-      return {
-        ...state,
-        step: 1,
-        firstValue: result,
-        input: format(result),
-        operation: { ...state.operation, firstFunction: newInput },
-      };
-    }
-    case 2: {
-      const { result, newInput } = useFunction(
-        state.firstValue,
-        format(state.firstValue),
-        func
-      );
-      return {
-        ...state,
-        step: 4,
-        secondValue: result,
-        input: format(result),
-        operation: { ...state.operation, secondFunction: newInput },
-      };
-    }
-    case 3: {
-      const { result, newInput } = useFunction(
-        state.secondValue === null ? state.firstValue : state.secondValue,
-        format(
-          state.secondValue === null ? state.firstValue : state.secondValue
-        ),
-        func
-      );
-      return {
-        ...state,
-        step: 4,
-        secondValue: result,
-        input: format(result),
-        operation: { ...state.operation, secondFunction: newInput },
-      };
-    }
-    case 4:
-      const { result, newInput } = useFunction(
-        state.secondValue === null ? state.firstValue : state.secondValue,
-        state.operation.secondFunction,
-        func
-      );
-      return {
-        ...state,
-        step: 4,
-        secondValue: result,
-        input: format(result),
-        operation: { ...state.operation, secondFunction: newInput },
-      };
-    case 5: {
-      const { result, newInput } = useFunction(
-        state.firstValue,
-        format(state.firstValue),
-        func
-      );
-      return {
-        ...state,
-        step: 1,
-        firstValue: result,
-        input: format(result),
-        operation: {
-          ...state.operation,
-          firstFunction: newInput,
-          secondFunction:
-            state.secondValue === null ? "" : format(state.secondValue),
-        },
-      };
-    }
-    default:
-      return state;
+  } catch (e) {
+    const message = e as string;
+    return { ...state, step: "error", input: message };
   }
 }
 function handleResult(state: State): State {
+  if (state.step === "error") return handleClear(state, "0");
   try {
     const result = operate(
       state.firstValue,
@@ -434,6 +466,16 @@ function handleResult(state: State): State {
         return {
           ...state,
           step: 5,
+          history: [
+            ...state.history,
+            {
+              firstFunction: state.operation.firstFunction,
+              secondFunction: state.operation.secondFunction,
+              result: format(result),
+              eq: "=",
+              operand: state.operation.operand,
+            },
+          ],
           operation: {
             ...state.operation,
             eq: "=",
@@ -445,6 +487,18 @@ function handleResult(state: State): State {
         return {
           ...state,
           step: 5,
+          history: [
+            ...state.history,
+            {
+              firstFunction: state.operation.firstFunction,
+              secondFunction: state.operation.secondFunction
+                ? state.operation.secondFunction
+                : format(state.firstValue),
+              result: format(result),
+              eq: "=",
+              operand: state.operation.operand,
+            },
+          ],
           operation: {
             ...state.operation,
             eq: "=",
@@ -459,6 +513,18 @@ function handleResult(state: State): State {
         return {
           ...state,
           step: 5,
+          history: [
+            ...state.history,
+            {
+              firstFunction: state.operation.firstFunction,
+              secondFunction: state.operation.secondFunction
+                ? state.operation.secondFunction
+                : format(state.secondValue || state.firstValue),
+              result: format(result),
+              eq: "=",
+              operand: state.operation.operand,
+            },
+          ],
           operation: {
             ...state.operation,
             eq: "=",
@@ -473,6 +539,16 @@ function handleResult(state: State): State {
         return {
           ...state,
           step: 5,
+          history: [
+            ...state.history,
+            {
+              firstFunction: state.operation.firstFunction,
+              secondFunction: state.operation.secondFunction,
+              result: format(result),
+              eq: "=",
+              operand: state.operation.operand,
+            },
+          ],
           operation: {
             ...state.operation,
             eq: "=",
@@ -485,6 +561,16 @@ function handleResult(state: State): State {
         return {
           ...state,
           step: 5,
+          history: [
+            ...state.history,
+            {
+              firstFunction: format(state.firstValue),
+              secondFunction: state.operation.secondFunction,
+              result: format(result),
+              eq: "=",
+              operand: state.operation.operand,
+            },
+          ],
           operation: {
             ...state.operation,
             eq: "=",
@@ -499,12 +585,82 @@ function handleResult(state: State): State {
         return state;
     }
   } catch (e) {
-    return state;
+    return { ...state, step: "error", input: e as string };
   }
 }
 
-function backsPace(state: State): State {
-  return state;
+function handleCE(state: State): State {
+  switch (state.step) {
+    case 0: {
+      return { ...state, firstValue: bignumber(0), input: "" };
+    }
+    case 1: {
+      return {
+        ...state,
+        step: 0,
+        firstValue: bignumber(0),
+        input: "",
+        operation: { ...state.operation, firstFunction: "" },
+      };
+    }
+    case 2: {
+      return {
+        ...state,
+        input: "",
+        secondValue: bignumber(0),
+      };
+    }
+    case 3: {
+      return { ...state, secondValue: bignumber(0), input: "" };
+    }
+    case 4: {
+      return {
+        ...state,
+        step: 3,
+        secondValue: bignumber(0),
+        input: "",
+        operation: { ...state.operation, secondFunction: "" },
+      };
+    }
+    case 5: {
+      return {
+        ...state,
+        firstValue: bignumber(0),
+        input: "",
+        operation: { ...state.operation, eq: "" },
+      };
+    }
+    case "error":
+      return handleClear(state, "0");
+    default:
+      return state;
+  }
+}
+
+function backspace(state: State): State {
+  switch (state.step) {
+    case 0: {
+      let input = state.input;
+      input = input.substring(0, input.length - 1);
+      input === "-" && (input = "");
+      const newNumber = math.bignumber(input || 0);
+      return { ...state, input: input, firstValue: newNumber };
+    }
+    case 3: {
+      let input = state.input;
+      input = input.substring(0, input.length - 1);
+      input === "-" && (input = "");
+      const newNumber = math.bignumber(input || state.secondValue);
+      return { ...state, input: input, secondValue: newNumber };
+    }
+    case 5: {
+      return { ...state, operation: { ...state.operation, eq: "" } };
+    }
+    case "error":
+      return handleClear(state, "0");
+    default:
+      return state;
+  }
 }
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -520,6 +676,12 @@ export function reducer(state: State, action: Action): State {
       return handleResult(state);
     case "addFunction":
       return hadleAddFunction(state, action.func);
+    case "backspace":
+      return backspace(state);
+    case "ce":
+      return handleCE(state);
+    case "eraseHist":
+      return { ...state, history: [] };
     default:
       return state;
   }

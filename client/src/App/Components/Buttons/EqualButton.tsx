@@ -1,45 +1,48 @@
 import { Button } from "@mui/material";
 import React from "react";
+import { CalculatorButton } from "../../Styles";
 
 interface EqualButtonProps {
   handleResult: () => void;
-  handleClear: (newInput: string) => void;
-  userInput: string;
 }
-export default function EqualButton({
-  handleResult,
-  handleClear,
-  userInput,
-}: EqualButtonProps) {
+export default function EqualButton({ handleResult }: EqualButtonProps) {
   const handleButtonClick = () => {
-    userInput === "Cannot devide by zero" || userInput === "Result is Undefined"
-      ? handleClear("0")
-      : handleResult();
+    handleResult();
   };
   return (
-    <Button
+    <CalculatorButton
       fullWidth
       variant="contained"
       disableRipple
+      id={"="}
       sx={{
         fontSize: 30,
         boxShadow: 2,
-
         maxHeight: "100%",
-        borderColor: "#bdbdbd",
+
+        color: "white",
+        // borderColor: "#bdbdbd",
         "&:hover": {
           backgroundColor: "#1e88e5",
-          borderColor: "#bdbdbd",
+          borderColor: "#616161",
         },
         "&:active": {
           backgroundColor: "#42a5f5",
           borderColor: "#bdbdbd",
           boxShadow: 0,
         },
+        "&:focus": {
+          backgroundColor: "#42a5f5",
+          borderColor: "#bdbdbd",
+          boxShadow: 0,
+        },
       }}
-      onClick={handleButtonClick}
+      onClick={() => {
+        handleButtonClick();
+        document.getElementById("=")?.blur();
+      }}
     >
       =
-    </Button>
+    </CalculatorButton>
   );
 }

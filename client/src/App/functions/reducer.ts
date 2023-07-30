@@ -324,7 +324,7 @@ function useFunction(
     case "sqrt": {
       const result = math.sqrt(num);
       if (math.isComplex(result)) throw "Invalid input";
-      const newInput = `sqrt(${input})`;
+      const newInput = `√(${input})`;
       return { result, newInput };
     }
     case "1/x": {

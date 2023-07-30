@@ -5,7 +5,7 @@ interface Props {
   handleClick: () => void;
   symbol: string | JSX.Element;
   disabled: boolean;
-  id?: string;
+  id: string;
 }
 export default function FunctionButtom({ handleClick, symbol, id }: Props) {
   return (
@@ -23,9 +23,16 @@ export default function FunctionButtom({ handleClick, symbol, id }: Props) {
         "&:active": {
           boxShadow: 0,
         },
+        "&:focus": {
+          boxShadow: 0,
+          backgroundColor: "#eeeeee",
+          borderColor: "#bdbdbd",
+          color: "#bdbdbd",
+        },
       }}
       onClick={() => {
         handleClick();
+        document.getElementById(id)?.blur();
       }}
     >
       {symbol}

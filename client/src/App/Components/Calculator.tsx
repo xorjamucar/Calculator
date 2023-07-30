@@ -138,12 +138,19 @@ export default function Calculator({ state, dispatch, matches }: Props) {
           handleClick={handlePercent}
           symbol="%"
           disabled={disableOperations}
+          id={"q"}
         />
-        <FunctionButtom handleClick={handleCE} symbol="CE" disabled={false} />
+        <FunctionButtom
+          handleClick={handleCE}
+          symbol="CE"
+          disabled={false}
+          id="e"
+        />
         <FunctionButtom
           handleClick={() => handleClear("0")}
           symbol="C"
           disabled={false}
+          id={"c"}
         />
         <FunctionButtom
           handleClick={handleBackSpace}
@@ -157,16 +164,19 @@ export default function Calculator({ state, dispatch, matches }: Props) {
           handleClick={handleUnderOne}
           symbol={<UnderOne />}
           disabled={disableOperations}
+          id="u"
         />
         <FunctionButtom
           handleClick={handlePow}
           symbol={<SquareIcon />}
           disabled={disableOperations}
+          id="p"
         />
         <FunctionButtom
           handleClick={handleRoot}
           symbol={<RootIcon />}
           disabled={disableOperations}
+          id="r"
         />
         <OperandButton
           operand={"÷"}
@@ -215,6 +225,7 @@ export default function Calculator({ state, dispatch, matches }: Props) {
           handleClick={handleSign}
           symbol={<Negate />}
           disabled={disableOperations}
+          id="n"
         />
 
         <NumberButton num="0" handleInputChange={handleInputChange} id="0" />

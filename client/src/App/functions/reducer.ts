@@ -87,6 +87,7 @@ export function handleChangeInput(
       };
     }
     case 3: {
+      if (state.input === "0") return { ...state, input: newInput };
       const isNegative = math.number(math.isNegative(state.secondValue || 0));
       const integerIsZero = math.number(
         math.isZero(math.round(state.secondValue || 0))
@@ -127,8 +128,8 @@ export function handleChangeInput(
     case 5:
       return {
         ...state,
-        step: 0,
-        input: newInput,
+        step: newInput === "0" ? 5 : 0,
+        input: newInput === "0" ? "" : newInput,
         firstValue: math.bignumber(newInput),
         operation: { ...state.operation, firstFunction: "" },
       };

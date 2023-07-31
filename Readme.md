@@ -10,7 +10,7 @@ This is a Windows-like calculator built using React. It imitates the functionali
    - Square (Press 'p' or click the x^2 button)
    - Percentage (Press 'q' or click the % button)
    - Negate (Press 'n' or click the +/- button)
-   - Divide 1 by Number (Press '1' and '/' or click the 1/x button)
+   - Divide 1 by Number (Press 'u' or click the 1/x button)
 3. **Add Operand**: The user can select a mathematical operand (+, -, ÷, x) to perform with the first input.
 4. **Add Second Input**: The user can enter the second input number.
 5. **Add Function to 2nd Input**: The user can select another mathematical function to perform on the second input.

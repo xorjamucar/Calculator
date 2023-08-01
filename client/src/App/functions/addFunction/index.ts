@@ -86,11 +86,11 @@ export default function addFunction(
           format(state.firstValue),
           func
         );
-        state.step = 1;
-        state.firstValue = result;
-        state.input = format(result);
-        state.operation.firstFunction = newInput;
-        state.operation.secondFunction =
+        s.step = 1;
+        s.firstValue = result;
+        s.input = format(result);
+        s.operation.firstFunction = newInput;
+        s.operation.secondFunction =
           state.secondValue === null ? "" : format(state.secondValue);
         break;
       }

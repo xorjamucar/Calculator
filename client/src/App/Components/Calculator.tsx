@@ -35,11 +35,12 @@ export default function Calculator({ state, dispatch, matches }: Props) {
     //isNaN(result) || !isFinite(result)
     []
   );
-
+  console.log(state.operation);
   const input = React.useMemo(() => {
     return state.input || "0";
   }, [state.input]);
   const operation = React.useMemo(() => {
+    console.log(state.step);
     switch (state.step) {
       case 0:
       case 1:

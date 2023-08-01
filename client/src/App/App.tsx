@@ -50,7 +50,7 @@ export default function App() {
     }
     function handleKeyUp(e: KeyboardEvent) {
       element?.click();
-      element?.blur();
+      // element?.blur();
     }
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
@@ -87,7 +87,7 @@ export default function App() {
               // maxWidth: 360,
             }}
           >
-            {[...state.history].reverse().map((value, i) => (
+            {[...state.history].map((value, i) => (
               <ListItem
                 key={i}
                 disableGutters

@@ -39,7 +39,6 @@ export default function Calculator({ state, dispatch, matches }: Props) {
   const input = React.useMemo(() => {
     return state.input || "0";
   }, [state.input]);
-
   const operation = React.useMemo(() => {
     switch (state.step) {
       case 0:
@@ -71,7 +70,13 @@ export default function Calculator({ state, dispatch, matches }: Props) {
           state.operation.secondFunction
         );
     }
-  }, [state.operation, state.step]);
+  }, [
+    state.step,
+    state.operation.firstFunction,
+    state.operation.secondFunction,
+    state.operation.eq,
+    state.operation.operand,
+  ]);
   // clear handler
   const handleClear = React.useCallback((newInput: string) => {
     dispatch({ type: "c" });

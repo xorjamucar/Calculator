@@ -14,7 +14,7 @@ export const PageBox = styled(Box)<BoxProps>(({ theme }) => ({
   display: "flex",
   flexDirection: "row",
   minHeight: "100vh",
-  backgroundColor: "#eeeeee",
+  backgroundColor: "#f2f2f2",
   width: "100%",
 }));
 
@@ -46,18 +46,25 @@ export const CalculatorButton = styled(Button)<ButtonProps>(({ theme }) => ({
   // maxHeight: "100%",
   // padding: 0,
   color: "black",
-  borderColor: "#616161",
+  borderColor: "#eeeeee",
   borderWidth: "2px",
   borderRadius: "10px",
+  boxShadow: theme.shadows[1],
   "&:hover": {
     backgroundColor: "#eeeeee",
-    borderColor: "#616161",
+    borderColor: "#eeeeee",
     borderWidth: "2px",
   },
   "&:active": {
     backgroundColor: "#eeeeee",
-    borderColor: "#bdbdbd",
+    borderColor: "#eeeeee",
     color: "#bdbdbd",
-    boxShadow: 0,
+    boxShadow: theme.shadows[0],
+  },
+  "&.Mui-active": {
+    backgroundColor: "#eeeeee",
+    borderColor: "#eeeeee",
+    color: "#bdbdbd",
+    boxShadow: theme.shadows[0],
   },
 }));

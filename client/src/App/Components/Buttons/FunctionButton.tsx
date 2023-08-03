@@ -17,22 +17,10 @@ export default function FunctionButtom({ handleClick, symbol, id }: Props) {
       sx={{
         fontSize: 25,
         color: "black",
-        // padding: "5px 15px px",
-        boxShadow: 1,
-        backgroundColor: "#f5f5f5",
-        "&:active": {
-          boxShadow: 0,
-        },
-        "&:focus": {
-          boxShadow: 0,
-          backgroundColor: "#eeeeee",
-          borderColor: "#bdbdbd",
-          color: "#bdbdbd",
-        },
+        backgroundColor: "#f7f7f7",
       }}
       onClick={() => {
         handleClick();
-        document.getElementById(id)?.blur();
       }}
     >
       {symbol}

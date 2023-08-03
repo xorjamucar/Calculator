@@ -15,7 +15,6 @@ export default function NumberButton({
 }: NumberButtonProps) {
   const handleClick = () => {
     handleInputChange(num);
-    document.getElementById(id)?.blur();
   };
   return (
     <CalculatorButton
@@ -25,19 +24,9 @@ export default function NumberButton({
       id={id}
       fullWidth
       sx={{
-        fontSize: 20,
-        boxShadow: 1,
-
+        fontSize: 25,
+        fontWeight: "normal",
         backgroundColor: "white",
-        "&:active": {
-          boxShadow: 0,
-        },
-        "&:focus": {
-          boxShadow: 0,
-          backgroundColor: "#eeeeee",
-          borderColor: "#bdbdbd",
-          color: "#bdbdbd",
-        },
       }}
     >
       {num}

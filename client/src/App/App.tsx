@@ -18,6 +18,7 @@ import {
 import { HistoryBox, PageBox } from "./Styles";
 import Calculator from "./Components/Calculator";
 import { Trash } from "./Icons";
+import useKeyboard from "./Hooks/useKeyboard";
 
 var math = create(all, { number: "BigNumber" });
 
@@ -38,28 +39,7 @@ export default function App() {
   });
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up("md"));
-  // let element: HTMLElement | null = null;
-  // element = document.getElementById("equal");
-  // console.log(element?.className);
-  React.useEffect(() => {
-    let element: HTMLElement | null = null;
-    function handleKeyDown(e: KeyboardEvent) {
-      e.preventDefault();
-      element = document.getElementById(e.key);
-      element?.focus();
-    }
-    function handleKeyUp(e: KeyboardEvent) {
-      element?.click();
-      // element?.blur();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("keyup", handleKeyUp);
-    // Don't forget to clean up
-    return function cleanup() {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.addEventListener("keyup", handleKeyUp);
-    };
-  }, []);
+  useKeyboard();
   return (
     <PageBox>
       <Calculator state={state} dispatch={dispatch} matches={matches} />

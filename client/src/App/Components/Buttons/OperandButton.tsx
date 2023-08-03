@@ -14,7 +14,6 @@ export default function OperandButton({
 }: OperationButtonProps) {
   const handleClick = () => {
     handleOperandChange(operand);
-    document.getElementById(id)?.blur();
   };
   return (
     <CalculatorButton
@@ -23,21 +22,10 @@ export default function OperandButton({
       id={id}
       fullWidth
       sx={{
-        fontSize: 20,
+        fontSize: 40,
         color: "black",
-        // padding: "5px 15px px",
-
-        boxShadow: 1,
+        fontWeight: 200,
         backgroundColor: "#f5f5f5",
-        "&:active": {
-          boxShadow: 0,
-        },
-        "&:focus": {
-          boxShadow: 0,
-          backgroundColor: "#eeeeee",
-          borderColor: "#bdbdbd",
-          color: "#bdbdbd",
-        },
       }}
       onClick={handleClick}
       disabled={disabled}

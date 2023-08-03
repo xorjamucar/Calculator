@@ -3,7 +3,7 @@ import React from "react";
 export const SquareIcon = createSvgIcon(
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    transform="scale(1.5)"
+    // transform="scale(1.5)"
     stroke="currentColor"
     fill="currentColor"
   >
@@ -46,8 +46,8 @@ export const SquareIcon = createSvgIcon(
 export const RootIcon = createSvgIcon(
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 35 35"
-    transform="scale(1.5)"
+    viewBox="0 0 34 34"
+    // transform="scale(1.5)"
     stroke="currentColor"
     fill="currentColor"
     // style="width:29.5px;height:36.427085876464844px;font-family:Asana-Math, Asana;background:transparent;"
@@ -63,8 +63,8 @@ export const RootIcon = createSvgIcon(
                     transform="matrix(0.0119,0,0,-0.0119,0,0)"
                     d="M16 23L16 -3C203 -3 203 0 239 0C275 0 275 -3 468 -3L468 82C353 77 307 81 122 77L304 270C401 373 431 428 431 503C431 618 353 689 226 689C154 689 105 669 56 619L39 483L68 483L81 529C97 587 133 612 200 612C286 612 341 558 341 473C341 398 299 324 186 204Z"
                     strokeOpacity="2"
-                    strokeWidth="35"
-                    fillOpacity="2"
+                    strokeWidth="8"
+                    fillOpacity="1"
                   ></path>
                 </g>
               </g>
@@ -78,8 +78,8 @@ export const RootIcon = createSvgIcon(
                     transform="matrix(0.017,0,0,-0.017,0,0)"
                     d="M9 1C24 -7 40 -11 52 -11C85 -11 124 18 155 65L231 182L242 113C255 28 278 -11 314 -11C336 -11 368 6 400 35L449 79L440 98C404 68 379 53 363 53C348 53 335 63 325 83C316 102 305 139 300 168L282 269L317 318C364 383 391 406 422 406C438 406 450 398 455 383L469 387L484 472C472 479 463 482 454 482C414 482 374 446 312 354L275 299L269 347C257 446 230 482 171 482C145 482 123 474 114 461L56 378L73 368C103 402 123 416 142 416C175 416 197 375 214 277L225 215L185 153C142 86 108 54 80 54C65 54 54 58 52 63L41 91L21 88C21 53 13 27 9 1Z"
                     strokeOpacity="2"
-                    strokeWidth="35"
-                    fillOpacity="2"
+                    strokeWidth="8"
+                    fillOpacity="1"
                   ></path>
                 </g>
               </g>
@@ -88,8 +88,8 @@ export const RootIcon = createSvgIcon(
           <svg x="2" overflow="visible" y="12.03125" height="17" width="25.5">
             <polygon
               points="0.35,10.28 4.79,7.91 9.66,18.23 16.36,0.00 25.50,0.00 25.50,1.05 17.09,1.05 9.18,22.58 3.10,9.85 0.64,10.77"
-              fillOpacity="2"
-              strokeWidth="35"
+              fillOpacity="1"
+              strokeWidth="8"
               stroke="none"
               strokeOpacity="1"
             ></polygon>
